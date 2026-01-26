@@ -10,16 +10,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
 
 file(GLOB IMGUI_SOURCES
-    "src/imgui/*.cpp"
-    "src/imgui/backends/imgui_impl_glfw.cpp"
-    "src/imgui/backends/imgui_impl_opengl3.cpp"
+    "include/imgui/*.cpp"
+    "include/imgui/backends/imgui_impl_glfw.cpp"
+    "include/imgui/backends/imgui_impl_opengl3.cpp"
 )
 
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES} )
 
 # Include directories (GLAD and your headers)
-target_include_directories(${PROJECT_NAME} PUBLIC include src src/imgui src/imgui/backends)
+target_include_directories(${PROJECT_NAME} PUBLIC include src include/imgui include/imgui/backends)
 
 # --- Link OpenGL ---
 find_package(OpenGL REQUIRED)
