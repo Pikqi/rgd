@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-Iinclude, -I../include, -Iimgui/, -I., -std=c++20]
