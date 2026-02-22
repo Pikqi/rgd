@@ -12,8 +12,8 @@
 #include "texture.h"
 
 // Instantiate static variables
-std::unordered_map<std::string, Texture2D>   ResourceManager::Textures;
-std::unordered_map<std::string, Shader>      ResourceManager::shaders;
+std::unordered_map<std::string, Texture2D> ResourceManager::Textures;
+std::unordered_map<std::string, Shader>    ResourceManager::shaders;
 
 Shader ResourceManager::LoadShader(const char* vShaderFile,
                                    const char* fShaderFile,
