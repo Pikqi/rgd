@@ -6,6 +6,8 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 
+#include <logger.h>
+
 #include <iostream>
 
 // GLFW function declarations
@@ -27,6 +29,9 @@ Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
 bool show_demo_window = false;
 int  main(int argc, char* argv[])
 {
+    Logger::init();
+    LOG_INFO("GLFW Init");
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -45,8 +50,10 @@ int  main(int argc, char* argv[])
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl; return -1;
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
     }
+    LOG_INFO("GLAD Loaded");
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -60,6 +67,7 @@ int  main(int argc, char* argv[])
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Init IMGUI
+    LOG_INFO("IMGUI Init");
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -96,8 +104,11 @@ int  main(int argc, char* argv[])
     bool   show_another_window = false;
     ImVec4 clear_color         = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    LOG_INFO("IMGUI Init end");
+
     // initialize game
     // ---------------
+
     game.Init();
 
     // deltaTime variables

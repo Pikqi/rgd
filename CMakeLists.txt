@@ -5,6 +5,7 @@ project(rgd VERSION 1.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Gather all .cpp and .c files in src/
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
@@ -30,6 +31,9 @@ find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${GLFW_LIBRARIES})
+
+find_package(spdlog REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog_header_only)
 
 # --- Run step --- 
 add_custom_target(run
