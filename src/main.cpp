@@ -1,7 +1,12 @@
 #include "game.h"
+#include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3.h>
+#include "index_buffer.h"
+#include "post_processor.h"
 #include "resource_manager.h"
+#include "shader.h"
+#include "vertex_buffer.h"
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_glfw.h>
@@ -9,6 +14,7 @@
 #include <render_api.h>
 
 #include <logger.h>
+#include <spdlog/spdlog.h>
 
 // GLFW function declarations
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -110,6 +116,31 @@ int  main(int argc, char* argv[])
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
+    float vertices[] = {
+        0.5f,  0.5f,  0.0f, // top right
+        0.5f,  -0.5f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        -0.5f, 0.5f,  0.0f  // top left
+    };
+    unsigned int indices[] = {
+        // note that we start from 0!
+        0, 1, 3, // first Triangle
+        1, 2, 3  // second Triangle
+    };
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    auto   vb           = VertexBuffer(vertices, sizeof(vertices));
+    auto   ib           = IndexBuffer(indices, 6);
+    Shader basic_shader = ResourceManager::LoadShader(
+        "shaders/basic/vertex.glsl", "shaders/basic/fragment.glsl", NULL,
+        "basic");
+    vb.bind();
+    ib.bind();
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                          (void*)0);
+    glEnableVertexAttribArray(0);
+
     while (!glfwWindowShouldClose(window))
     {
         // calculate delta time
@@ -158,6 +189,11 @@ int  main(int argc, char* argv[])
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        basic_shader.Use();
+        ib.bind();
+        vb.bind();
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         render_context.swapBuffers();
     }
