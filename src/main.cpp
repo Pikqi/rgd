@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3.h>
 #include "index_buffer.h"
-#include "post_processor.h"
 #include "resource_manager.h"
 #include "shader.h"
 #include "vertex_array.h"
@@ -13,6 +12,7 @@
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <render_context.h>
 #include <render_api.h>
+#include <rgd.h>
 
 #include <logger.h>
 #include <spdlog/spdlog.h>
@@ -63,9 +63,7 @@ int  main(int argc, char* argv[])
 
     // OpenGL configuration
     // --------------------
-    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    RenderAPI::init(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     // Init IMGUI
     LOG_INFO("IMGUI Init");
@@ -190,7 +188,7 @@ int  main(int argc, char* argv[])
 
         basic_shader.use();
         va.bind();
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        GLCALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
         va.unbind();
 
         render_context.swapBuffers();

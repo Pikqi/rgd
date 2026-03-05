@@ -3,6 +3,7 @@
 #include "resource_manager.h"
 #include "shader.h"
 #include <glad/glad.h>
+#include <rgd.h>
 
 static GLuint                 debug_vao;
 static GLuint                 debug_vbo;
@@ -12,15 +13,16 @@ static std::vector<glm::vec2> vertices;
 void initDebug()
 {
     vertices.reserve(64);
-    glGenVertexArrays(1, &debug_vao);
-    glBindVertexArray(debug_vao);
+    GLCALL(glGenVertexArrays(1, &debug_vao));
+    GLCALL(glBindVertexArray(debug_vao));
 
-    glGenBuffers(1, &debug_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, debug_vbo);
+    GLCALL(glGenBuffers(1, &debug_vbo));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, debug_vbo));
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
-    glBindVertexArray(0);
+    GLCALL(glEnableVertexAttribArray(0));
+    GLCALL(
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0));
+    GLCALL(glBindVertexArray(0));
     debug_shader = ResourceManager::GetShader("debug");
 }
 
@@ -44,15 +46,14 @@ void debugDrawRect(const glm::vec2 center, const glm::vec2 size){
 
 void debugFlush(){
     debug_shader.use();
-    glBindBuffer(GL_ARRAY_BUFFER, debug_vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec2), vertices.data(),
-                      GL_STREAM_DRAW);
-    glBindVertexArray(debug_vao);
-		glDrawArrays(GL_LINES, 0, vertices.size());
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, debug_vbo));
+    GLCALL(glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec2), vertices.data(), GL_STREAM_DRAW));
+    GLCALL(glBindVertexArray(debug_vao));
+		GLCALL(glDrawArrays(GL_LINES, 0, vertices.size()));
 
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCALL(glBindVertexArray(0));
 
 		vertices.clear();
 }

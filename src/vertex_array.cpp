@@ -1,25 +1,26 @@
-#include "post_processor.h"
 #include <vertex_array.h>
+#include <glad/glad.h>
+#include <rgd.h>
 
 VertexArray::VertexArray()
 {
-    glGenVertexArrays(1, &_id);
-    glBindVertexArray(_id);
+    GLCALL(glGenVertexArrays(1, &_id));
+    GLCALL(glBindVertexArray(_id));
 };
 
 VertexArray::~VertexArray()
 {
-    glDeleteVertexArrays(1, &_id);
+    GLCALL(glDeleteVertexArrays(1, &_id));
 };
 
 void VertexArray::bind() const
 {
-    glBindVertexArray(_id);
+    GLCALL(glBindVertexArray(_id));
 }
 
 void VertexArray::unbind() const
 {
-    glBindVertexArray(0);
+    GLCALL(glBindVertexArray(0));
 }
 
 void VertexArray::add_buffer(const VertexBuffer&       vb,
@@ -36,13 +37,14 @@ void VertexArray::add_buffer(const VertexBuffer&       vb,
         const auto element_size =
             VertexBufferElement::get_size_of_type(element.type) * element.count;
 
-        glVertexAttribPointer(i, element.count, element.type,
-                              element.normalize ? GL_TRUE : GL_FALSE,
-                              layout.get_stride(), (void*)offset);
+        GLCALL(glVertexAttribPointer(i, element.count, element.type,
+                                     element.normalize ? GL_TRUE : GL_FALSE,
+                                     layout.get_stride(), (void*)offset));
         offset += element_size;
-        glEnableVertexAttribArray(i);
+        GLCALL(glEnableVertexAttribArray(i));
     }
 }
+
 std::vector<VertexBufferElement> VertexBufferLayout::get_elements() const
 {
     return _elements;

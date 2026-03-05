@@ -23,6 +23,11 @@ class Logger
         return main_logger;
     }
 
+    static inline void flush()
+    {
+        main_logger->flush();
+    }
+
   private:
     static inline std::shared_ptr<spdlog::logger> main_logger;
 };
