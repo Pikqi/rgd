@@ -1,14 +1,14 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include "game.h"
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 #include "resource_manager.h"
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_glfw.h>
+#include <render_context.h>
+#include <render_api.h>
 
 #include <logger.h>
-
-#include <iostream>
 
 // GLFW function declarations
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -46,14 +46,8 @@ int  main(int argc, char* argv[])
                                           "Breakout", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
-    LOG_INFO("GLAD Loaded");
+    RenderContext render_context = RenderContext(window);
+    render_context.init();
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -135,8 +129,7 @@ int  main(int argc, char* argv[])
 
         // render
         // ------
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        RenderAPI::clear();
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -166,7 +159,7 @@ int  main(int argc, char* argv[])
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwSwapBuffers(window);
+        render_context.swapBuffers();
     }
 
     // delete all resources as loaded using the resource manager
@@ -215,9 +208,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width
-    // and height will be significantly larger than specified on retina
-    // displays.
-    glViewport(0, 0, width, height);
+    RenderAPI::updateViewPort(width, height);
     game.UpdateScreenSize(width, height);
 }

@@ -30,3 +30,4 @@ class Logger
 #define LOG_INFO(...) Logger::get_main_logger()->info(__VA_ARGS__)
 #define LOG_WARN(...) Logger::get_main_logger()->warn(__VA_ARGS__)
 #define LOG_DEBUG(...) Logger::get_main_logger()->debug(__VA_ARGS__)
+#define LOG_FATAL(...) Logger::get_main_logger()->error(__VA_ARGS__)
