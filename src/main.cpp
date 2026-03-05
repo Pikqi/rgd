@@ -13,6 +13,8 @@
 #include <render_context.h>
 #include <render_api.h>
 #include <rgd.h>
+#include <renderer.h>
+#include <stb_image.h>
 
 #include <logger.h>
 #include <spdlog/spdlog.h>
@@ -36,6 +38,8 @@ Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
 bool show_demo_window = false;
 int  main(int argc, char* argv[])
 {
+
+    stbi_set_flip_vertically_on_load(true);
     Logger::init();
     LOG_INFO("GLFW Init");
 
@@ -64,6 +68,7 @@ int  main(int argc, char* argv[])
     // OpenGL configuration
     // --------------------
     RenderAPI::init(SCREEN_WIDTH, SCREEN_HEIGHT);
+    Renderer renderer;
 
     // Init IMGUI
     LOG_INFO("IMGUI Init");
@@ -109,6 +114,9 @@ int  main(int argc, char* argv[])
     // ---------------
 
     game.Init();
+    auto texture =
+        ResourceManager::LoadTexture("res/awesomeface.png", true, "face");
+    texture->bind();
 
     // deltaTime variables
     // -------------------
@@ -125,6 +133,9 @@ int  main(int argc, char* argv[])
         0, 1, 3, //
         1, 2, 3  //
     };
+    Shader basic_shader = ResourceManager::LoadShader(
+        "shaders/basic_textured/vertex.glsl",
+        "shaders/basic_textured/fragment.glsl", NULL, "basic");
 
     VertexArray        va;
     VertexBuffer       vb(vertices, sizeof(vertices));
@@ -132,10 +143,7 @@ int  main(int argc, char* argv[])
     VertexBufferLayout va_layout;
     va_layout.push(GL_FLOAT, 3);
     va.add_buffer(vb, va_layout);
-
-    Shader basic_shader = ResourceManager::LoadShader(
-        "shaders/basic/vertex.glsl", "shaders/basic/fragment.glsl", NULL,
-        "basic");
+    basic_shader.setInteger("texture1", 0);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -186,10 +194,7 @@ int  main(int argc, char* argv[])
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        basic_shader.use();
-        va.bind();
-        GLCALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
-        va.unbind();
+        renderer.Draw(vb, va, basic_shader);
 
         render_context.swapBuffers();
     }

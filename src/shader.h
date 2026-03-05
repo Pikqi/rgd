@@ -9,7 +9,7 @@ class Shader
 {
   public:
     Shader() {}
-    void use();
+    void use() const;
     void compile(const char* vertexSource, const char* fragmentSource,
                  const char* geometrySource = nullptr);
     // utility functions

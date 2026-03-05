@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "rgd.h"
 
-void Shader::use()
+void Shader::use() const
 {
     GLCALL(glUseProgram(this->_id));
 }

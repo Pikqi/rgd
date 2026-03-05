@@ -1,35 +1,40 @@
 #include "texture.h"
+#include "logger.h"
 #include <rgd.h>
+#include <glad/glad.h>
 
-Texture2D::Texture2D()
-    : Width(0), Height(0), Internal_Format(GL_RGB), Image_Format(GL_RGB),
-      Wrap_S(GL_REPEAT), Wrap_T(GL_REPEAT), Filter_Min(GL_LINEAR),
-      Filter_Max(GL_NEAREST)
+Texture::Texture(const unsigned char* data, unsigned int width,
+                 unsigned int height, bool alpha)
+    : _alpha(alpha), _width(width), _height(height)
 {
-    GLCALL(glGenTextures(1, &this->ID));
+    GLCALL(glGenTextures(1, &_id));
+    GLCALL(glBindTexture(GL_TEXTURE_2D, _id));
+
+    GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
+    GLCALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+                        GL_UNSIGNED_BYTE, data));
+}
+Texture::~Texture()
+{
+    GLCALL(glDeleteTextures(1, &_id));
 }
 
-void Texture2D::Generate(unsigned int width, unsigned int height,
-                         unsigned char* data)
+void Texture::bind(unsigned int slot)
 {
-    this->Width  = width;
-    this->Height = height;
-    // create Texture
-    GLCALL(glBindTexture(GL_TEXTURE_2D, this->ID));
-    GLCALL(glTexImage2D(GL_TEXTURE_2D, 0, this->Internal_Format, width, height,
-                        0, this->Image_Format, GL_UNSIGNED_BYTE, data));
-    // set Texture wrap and filter modes
-    GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this->Wrap_S));
-    GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this->Wrap_T));
-    GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                           this->Filter_Min));
-    GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                           this->Filter_Max));
-    // unbind texture
-    GLCALL(glBindTexture(GL_TEXTURE_2D, 0));
-}
+    if (slot > 31)
+    {
+        LOG_WARN("Tried to bind texture to slot > 31, slot: {}", slot);
+        return;
+    }
 
-void Texture2D::Bind() const
+    GLCALL(glActiveTexture(GL_TEXTURE0 + slot));
+    GLCALL(glBindTexture(GL_TEXTURE_2D, _id));
+};
+void Texture::unbind()
 {
-    GLCALL(glBindTexture(GL_TEXTURE_2D, this->ID));
+    GLCALL(glBindTexture(GL_TEXTURE_2D, 0))
 }

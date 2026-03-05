@@ -1,19 +1,21 @@
 #include "resource_manager.h"
 
 #include <cassert>
-#include <cstdio>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <fstream>
 #include <string>
 
+#include "logger.h"
 #include "stb_image.h"
 #include "texture.h"
 
 // Instantiate static variables
-std::unordered_map<std::string, Texture2D> ResourceManager::Textures;
-std::unordered_map<std::string, Shader>    ResourceManager::shaders;
+std::unordered_map<std::string, std::shared_ptr<Texture>>
+                                        ResourceManager::Textures;
+std::unordered_map<std::string, Shader> ResourceManager::shaders;
 
 Shader ResourceManager::LoadShader(const char* vShaderFile,
                                    const char* fShaderFile,
@@ -28,20 +30,21 @@ Shader ResourceManager::GetShader(std::string name)
     return shaders[name];
 }
 
-Texture2D ResourceManager::LoadTexture(const char* file, bool alpha,
-                                       std::string name)
+std::shared_ptr<Texture>
+ResourceManager::LoadTexture(const char* file, bool alpha, std::string name)
 {
     Textures[name] = loadTextureFromFile(file, alpha);
     return Textures[name];
 }
 
-Texture2D ResourceManager::GetTexture(std::string name)
+std::shared_ptr<Texture> ResourceManager::GetTexture(std::string name)
 {
     const auto it = Textures.find(name);
     if (it == Textures.end())
     {
         printf("ResourceManager: Can't find texture %s", name.c_str());
     }
+    // todo: add fallback texture
     return Textures[name];
 }
 
@@ -50,9 +53,7 @@ void ResourceManager::Clear()
     // (properly) delete all shaders
     for (auto iter : shaders)
         glDeleteProgram(iter.second.get_id());
-    // (properly) delete all textures
-    for (auto iter : Textures)
-        glDeleteTextures(1, &iter.second.ID);
+    Textures.clear();
 }
 
 Shader ResourceManager::loadShaderFromFile(const char* vShaderFile,
@@ -89,7 +90,8 @@ Shader ResourceManager::loadShaderFromFile(const char* vShaderFile,
         }
     } catch (std::exception e)
     {
-        std::cout << "ERROR::SHADER: Failed to read shader files" << std::endl;
+        LOG_FATAL("ERROR::SHADER: Failed to read shader files {} {} {}",
+                  vShaderFile, fShaderFile, gShaderFile);
     }
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
@@ -101,25 +103,17 @@ Shader ResourceManager::loadShaderFromFile(const char* vShaderFile,
     return shader;
 }
 
-Texture2D ResourceManager::loadTextureFromFile(const char* file, bool alpha)
+std::shared_ptr<Texture> ResourceManager::loadTextureFromFile(const char* file,
+                                                              bool        alpha)
 {
-    // create texture object
-    Texture2D texture;
-    if (alpha)
-    {
-        texture.Internal_Format = GL_RGBA;
-        texture.Image_Format    = GL_RGBA;
-    }
-    // load image
     int            width, height, nrChannels;
     unsigned char* data = stbi_load(file, &width, &height, &nrChannels, 0);
     if (!data)
     {
-        std::cout << "Cant open texture: " << file << std::endl;
+        LOG_WARN("Cant open texture: {}", file);
     }
-    // now generate texture
-    texture.Generate(width, height, data);
-    // and finally free image data
+    auto texture = std::make_unique<Texture>(data, width, height, alpha);
+
     stbi_image_free(data);
     return texture;
 }
