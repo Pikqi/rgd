@@ -12,8 +12,8 @@
 #include "texture.h"
 
 // Instantiate static variables
-std::unordered_map<std::string, Texture2D>   ResourceManager::Textures;
-std::unordered_map<std::string, Shader>      ResourceManager::shaders;
+std::unordered_map<std::string, Texture2D> ResourceManager::Textures;
+std::unordered_map<std::string, Shader>    ResourceManager::shaders;
 
 Shader ResourceManager::LoadShader(const char* vShaderFile,
                                    const char* fShaderFile,
@@ -49,7 +49,7 @@ void ResourceManager::Clear()
 {
     // (properly) delete all shaders
     for (auto iter : shaders)
-        glDeleteProgram(iter.second.ID);
+        glDeleteProgram(iter.second.get_id());
     // (properly) delete all textures
     for (auto iter : Textures)
         glDeleteTextures(1, &iter.second.ID);
@@ -96,7 +96,7 @@ Shader ResourceManager::loadShaderFromFile(const char* vShaderFile,
     const char* gShaderCode = geometryCode.c_str();
     // 2. now create shader object from source code
     Shader shader;
-    shader.Compile(vShaderCode, fShaderCode,
+    shader.compile(vShaderCode, fShaderCode,
                    gShaderFile != nullptr ? gShaderCode : nullptr);
     return shader;
 }

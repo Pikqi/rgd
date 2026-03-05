@@ -37,7 +37,7 @@ PostProcessor::PostProcessor(Shader shader, unsigned int width,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // initialize render data and uniforms
     this->initRenderData();
-    this->PostProcessingShader.SetInteger("scene", 0, true);
+    this->PostProcessingShader.setInteger("scene", 0);
     float offset        = 1.0f / 300.0f;
     float offsets[9][2] = {
         {-offset, offset},  // top-left
@@ -50,18 +50,19 @@ PostProcessor::PostProcessor(Shader shader, unsigned int width,
         {0.0f, -offset},    // bottom-center
         {offset, -offset}   // bottom-right
     };
-    glUniform2fv(glGetUniformLocation(this->PostProcessingShader.ID, "offsets"),
-                 9, (float*)offsets);
+    glUniform2fv(
+        glGetUniformLocation(this->PostProcessingShader.get_id(), "offsets"), 9,
+        (float*)offsets);
     int edge_kernel[9] = {-1, -1, -1, -1, 8, -1, -1, -1, -1};
-    glUniform1iv(
-        glGetUniformLocation(this->PostProcessingShader.ID, "edge_kernel"), 9,
-        edge_kernel);
+    glUniform1iv(glGetUniformLocation(this->PostProcessingShader.get_id(),
+                                      "edge_kernel"),
+                 9, edge_kernel);
     float blur_kernel[9] = {1.0f / 16.0f, 2.0f / 16.0f, 1.0f / 16.0f,
                             2.0f / 16.0f, 4.0f / 16.0f, 2.0f / 16.0f,
                             1.0f / 16.0f, 2.0f / 16.0f, 1.0f / 16.0f};
-    glUniform1fv(
-        glGetUniformLocation(this->PostProcessingShader.ID, "blur_kernel"), 9,
-        blur_kernel);
+    glUniform1fv(glGetUniformLocation(this->PostProcessingShader.get_id(),
+                                      "blur_kernel"),
+                 9, blur_kernel);
 }
 
 void PostProcessor::changeResolution(unsigned int width, unsigned int height)
@@ -106,11 +107,11 @@ void PostProcessor::EndRender()
 void PostProcessor::Render(float time)
 {
     // set uniforms/options
-    this->PostProcessingShader.Use();
-    this->PostProcessingShader.SetFloat("time", time);
-    this->PostProcessingShader.SetInteger("confuse", this->Confuse);
-    this->PostProcessingShader.SetInteger("chaos", this->Chaos);
-    this->PostProcessingShader.SetInteger("shake", this->Shake);
+    this->PostProcessingShader.use();
+    this->PostProcessingShader.setFloat("time", time);
+    this->PostProcessingShader.setInteger("confuse", this->Confuse);
+    this->PostProcessingShader.setInteger("chaos", this->Chaos);
+    this->PostProcessingShader.setInteger("shake", this->Shake);
     // render textured quad
     glActiveTexture(GL_TEXTURE0);
     this->Texture.Bind();
@@ -145,6 +146,6 @@ void PostProcessor::initRenderData()
 
 void PostProcessor::setShakeStrength(float strenght)
 {
-    this->PostProcessingShader.SetFloat("shake_strength", strenght);
+    this->PostProcessingShader.setFloat("shake_strength", strenght);
     this->shake_strenght = strenght;
 }

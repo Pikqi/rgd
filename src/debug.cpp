@@ -43,7 +43,7 @@ void debugDrawRect(const glm::vec2 center, const glm::vec2 size){
 }
 
 void debugFlush(){
-    debug_shader.Use();
+    debug_shader.use();
     glBindBuffer(GL_ARRAY_BUFFER, debug_vbo);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec2), vertices.data(),
                       GL_STREAM_DRAW);

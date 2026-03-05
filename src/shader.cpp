@@ -1,14 +1,13 @@
 #include "shader.h"
+#include "logger.h"
 
-#include <iostream>
-
-Shader &Shader::Use()
+void Shader::use()
 {
-    glUseProgram(this->ID);
-    return *this;
+    glUseProgram(this->_id);
 }
 
-void Shader::Compile(const char* vertexSource, const char* fragmentSource, const char* geometrySource)
+void Shader::compile(const char* vertexSource, const char* fragmentSource,
+                     const char* geometrySource)
 {
     unsigned int sVertex, sFragment, gShader;
     // vertex Shader
@@ -30,79 +29,84 @@ void Shader::Compile(const char* vertexSource, const char* fragmentSource, const
         checkCompileErrors(gShader, "GEOMETRY");
     }
     // shader program
-    this->ID = glCreateProgram();
-    glAttachShader(this->ID, sVertex);
-    glAttachShader(this->ID, sFragment);
+    this->_id = glCreateProgram();
+    glAttachShader(this->_id, sVertex);
+    glAttachShader(this->_id, sFragment);
     if (geometrySource != nullptr)
-        glAttachShader(this->ID, gShader);
-    glLinkProgram(this->ID);
-    checkCompileErrors(this->ID, "PROGRAM");
-    // delete the shaders as they're linked into our program now and no longer necessary
+        glAttachShader(this->_id, gShader);
+    glLinkProgram(this->_id);
+    checkCompileErrors(this->_id, "PROGRAM");
+    // delete the shaders as they're linked into our program now and no longer
+    // necessary
     glDeleteShader(sVertex);
     glDeleteShader(sFragment);
     if (geometrySource != nullptr)
         glDeleteShader(gShader);
 }
 
-void Shader::SetFloat(const char *name, float value, bool useShader)
+void Shader::setFloat(const char* name, float value)
 {
-    if (useShader)
-        this->Use();
-    glUniform1f(glGetUniformLocation(this->ID, name), value);
+    this->use();
+    glUniform1f(getUniformLocation(name), value);
 }
-void Shader::SetInteger(const char *name, int value, bool useShader)
+void Shader::setInteger(const char* name, int value)
 {
-    if (useShader)
-        this->Use();
-    glUniform1i(glGetUniformLocation(this->ID, name), value);
+    this->use();
+    glUniform1i(getUniformLocation(name), value);
 }
-void Shader::SetVector2f(const char *name, float x, float y, bool useShader)
+void Shader::setVector2f(const char* name, float x, float y)
 {
-    if (useShader)
-        this->Use();
-    glUniform2f(glGetUniformLocation(this->ID, name), x, y);
+    this->use();
+    glUniform2f(getUniformLocation(name), x, y);
 }
-void Shader::SetVector2f(const char *name, const glm::vec2 &value, bool useShader)
+void Shader::setVector2f(const char* name, const glm::vec2& value)
 {
-    if (useShader)
-        this->Use();
-    glUniform2f(glGetUniformLocation(this->ID, name), value.x, value.y);
+    this->use();
+    glUniform2f(getUniformLocation(name), value.x, value.y);
 }
-void Shader::SetVector3f(const char *name, float x, float y, float z, bool useShader)
+void Shader::setVector3f(const char* name, float x, float y, float z)
 {
-    if (useShader)
-        this->Use();
-    glUniform3f(glGetUniformLocation(this->ID, name), x, y, z);
+    this->use();
+    glUniform3f(getUniformLocation(name), x, y, z);
 }
-void Shader::SetVector3f(const char *name, const glm::vec3 &value, bool useShader)
+void Shader::setVector3f(const char* name, const glm::vec3& value)
 {
-    if (useShader)
-        this->Use();
-    glUniform3f(glGetUniformLocation(this->ID, name), value.x, value.y, value.z);
+    this->use();
+    glUniform3f(getUniformLocation(name), value.x, value.y, value.z);
 }
-void Shader::SetVector4f(const char *name, float x, float y, float z, float w, bool useShader)
+void Shader::setVector4f(const char* name, float x, float y, float z, float w)
 {
-    if (useShader)
-        this->Use();
-    glUniform4f(glGetUniformLocation(this->ID, name), x, y, z, w);
+    this->use();
+    glUniform4f(getUniformLocation(name), x, y, z, w);
 }
-void Shader::SetVector4f(const char *name, const glm::vec4 &value, bool useShader)
+void Shader::setVector4f(const char* name, const glm::vec4& value)
 {
-    if (useShader)
-        this->Use();
-    glUniform4f(glGetUniformLocation(this->ID, name), value.x, value.y, value.z, value.w);
+    this->use();
+    glUniform4f(getUniformLocation(name), value.x, value.y, value.z, value.w);
 }
-void Shader::SetMatrix4(const char *name, const glm::mat4 &matrix, bool useShader)
+void Shader::setMatrix4(const char* name, const glm::mat4& matrix)
 {
-    if (useShader)
-        this->Use();
-    glUniformMatrix4fv(glGetUniformLocation(this->ID, name), 1, false, glm::value_ptr(matrix));
+    this->use();
+    glUniformMatrix4fv(getUniformLocation(name), 1, false,
+                       glm::value_ptr(matrix));
 }
 
+int Shader::getUniformLocation(const char* name) const
+{
+
+    int location = glGetUniformLocation(this->_id, name);
+    if (location == -1)
+    {
+        LOG_WARN(
+            "SHADER: Uniform with name {} does not exist, on shader id: {}",
+            name, _id);
+    }
+    return location;
+};
 
 void Shader::checkCompileErrors(unsigned int object, std::string type)
 {
-    int success;
+    int  success;
     char infoLog[1024];
     if (type != "PROGRAM")
     {
@@ -110,9 +114,11 @@ void Shader::checkCompileErrors(unsigned int object, std::string type)
         if (!success)
         {
             glGetShaderInfoLog(object, 1024, NULL, infoLog);
-            std::cout << "| ERROR::SHADER: Compile-time error: Type: " << type << "\n"
-                << infoLog << "\n -- --------------------------------------------------- -- "
-                << std::endl;
+            LOG_FATAL(
+                "SHADER: Compile-time error: Type: {}\n"
+                "{}"
+                "\n -- --------------------------------------------------- ",
+                type, infoLog);
         }
     }
     else
@@ -121,10 +127,11 @@ void Shader::checkCompileErrors(unsigned int object, std::string type)
         if (!success)
         {
             glGetProgramInfoLog(object, 1024, NULL, infoLog);
-            std::cout << "| ERROR::Shader: Link-time error: Type: " << type << "\n"
-                << infoLog << "\n -- --------------------------------------------------- -- "
-                << std::endl;
+            LOG_FATAL(
+                "Shader: Link-time error: Type: {}\n"
+                "{}"
+                "\n -- --------------------------------------------------- "
+                "-- ");
         }
     }
 }
-

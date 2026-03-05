@@ -188,7 +188,7 @@ int  main(int argc, char* argv[])
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        basic_shader.Use();
+        basic_shader.use();
         va.bind();
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         va.unbind();
