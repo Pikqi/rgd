@@ -14,9 +14,9 @@ out vec3 color;
 // Outputs the texture coordinates to the Fragment Shader
 out vec2 texCoord;
 // Outputs the normal for the Fragment Shader
-out vec3 Normal;
+out vec3 normal;
 // Outputs the current position for the Fragment Shader
-out vec3 crntPos;
+out vec3 fragPos;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -24,15 +24,10 @@ uniform mat4 projection;
 
 void main()
 {
-  // calculates current position
-  crntPos = vec3(model * vec4(aPos, 1.0f));
-  // Outputs the positions/coordinates of all vertices
-  gl_Position = projection * view * vec4(crntPos, 1.0);
+  fragPos = vec3(model * vec4(aPos, 1.0));
+  gl_Position = projection * view * vec4(fragPos, 1.0);
 
-  // Assigns the colors from the Vertex Data to "color"
-  color = aColor;
-  // Assigns the texture coordinates from the Vertex Data to "texCoord"
   texCoord = aTex;
-  // Assigns the normal from the Vertex Data to "Normal"
-  Normal = aNormal;
+  normal = aNormal;
+  color = aColor;
 }
