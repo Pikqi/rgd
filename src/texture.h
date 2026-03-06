@@ -21,6 +21,11 @@ class Texture
         return _height;
     }
 
+    inline unsigned int getId()
+    {
+        return _id;
+    }
+
   private:
     unsigned int _id;
     unsigned int _width;

@@ -18,7 +18,7 @@ class ResourceManager
   public:
     // resource storage
     static std::unordered_map<std::string, Shader>                   shaders;
-    static std::unordered_map<std::string, std::shared_ptr<Texture>> Textures;
+    static std::unordered_map<std::string, std::shared_ptr<Texture>> textures;
     // loads (and generates) a shader program from file loading vertex, fragment
     // (and geometry) shader's source code. If gShaderFile is not nullptr, it
     // also loads a geometry shader

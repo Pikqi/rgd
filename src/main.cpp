@@ -10,6 +10,7 @@
 #include "shader.h"
 #include "vertex_array.h"
 #include "vertex_buffer.h"
+#include <cstdint>
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_glfw.h>
@@ -247,8 +248,25 @@ int  main(int argc, char* argv[])
         ImGui::NewFrame();
 
         {
-            ImGui::Begin("test");
-            ImGui::SliderFloat("a", &a, 0.00001f, 0.1f);
+            ImGui::Begin("Resources");
+            ImGui::SeparatorText("Textures");
+
+            for (auto tex : ResourceManager::textures)
+            {
+                ImGui::Text(tex.first.c_str());
+                auto texture = tex.second;
+                ImGui::Image((ImTextureID)(intptr_t)tex.second->getId(),
+                             ImVec2(100, 100));
+            }
+
+            ImGui::SeparatorText("Shaders");
+
+            for (auto shad : ResourceManager::shaders)
+            {
+                ImGui::Text("%s", shad.first.c_str());
+                auto shader = shad.second;
+            }
+
             ImGui::End();
         }
 

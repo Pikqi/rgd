@@ -14,7 +14,7 @@
 
 // Instantiate static variables
 std::unordered_map<std::string, std::shared_ptr<Texture>>
-                                        ResourceManager::Textures;
+                                        ResourceManager::textures;
 std::unordered_map<std::string, Shader> ResourceManager::shaders;
 
 Shader ResourceManager::LoadShader(const char* vShaderFile,
@@ -33,19 +33,19 @@ Shader ResourceManager::GetShader(std::string name)
 std::shared_ptr<Texture>
 ResourceManager::LoadTexture(const char* file, bool alpha, std::string name)
 {
-    Textures[name] = loadTextureFromFile(file, alpha);
-    return Textures[name];
+    textures[name] = loadTextureFromFile(file, alpha);
+    return textures[name];
 }
 
 std::shared_ptr<Texture> ResourceManager::GetTexture(std::string name)
 {
-    const auto it = Textures.find(name);
-    if (it == Textures.end())
+    const auto it = textures.find(name);
+    if (it == textures.end())
     {
         printf("ResourceManager: Can't find texture %s", name.c_str());
     }
     // todo: add fallback texture
-    return Textures[name];
+    return textures[name];
 }
 
 void ResourceManager::Clear()
@@ -53,7 +53,7 @@ void ResourceManager::Clear()
     // (properly) delete all shaders
     for (auto iter : shaders)
         glDeleteProgram(iter.second.get_id());
-    Textures.clear();
+    textures.clear();
 }
 
 Shader ResourceManager::loadShaderFromFile(const char* vShaderFile,
