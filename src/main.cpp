@@ -3,8 +3,8 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3.h>
-#include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include "index_buffer.h"
 #include "resource_manager.h"
 #include "shader.h"
@@ -39,10 +39,70 @@ const unsigned int SCREEN_HEIGHT = 890;
 
 Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-Camera3D camera;
+Camera3D camera(glm::vec3(0.0f, 0.0f, -2.0f));
 
 bool show_demo_window = false;
-int  main(int argc, char* argv[])
+
+GLfloat light_vertices[] = { //     COORDINATES     //
+    -0.1f, -0.1f, 0.1f,  -0.1f, -0.1f, -0.1f, 0.1f, -0.1f,
+    -0.1f, 0.1f,  -0.1f, 0.1f,  -0.1f, 0.1f,  0.1f, -0.1f,
+    0.1f,  -0.1f, 0.1f,  0.1f,  -0.1f, 0.1f,  0.1f, 0.1f};
+
+GLuint light_indices[] = {0, 1, 2, 0, 2, 3, 0, 4, 7, 0, 7, 3, 3, 7, 6, 3, 6, 2,
+                          2, 6, 5, 2, 5, 1, 1, 5, 4, 1, 4, 0, 4, 5, 6, 4, 6, 7};
+
+// Vertices coordinates
+GLfloat pyramid_vertices[] = {
+    //     COORDINATES     /        COLORS          /    TexCoord   / NORMALS //
+    -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f,
+    0.0f,  0.0f, 0.0f,  -1.0f, 0.0f, // Bottom side
+    -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f,
+    0.0f,  5.0f, 0.0f,  -1.0f, 0.0f, // Bottom side
+    0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f,
+    5.0f,  5.0f, 0.0f,  -1.0f, 0.0f, // Bottom side
+    0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f,
+    5.0f,  0.0f, 0.0f,  -1.0f, 0.0f, // Bottom side
+
+    -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f,
+    0.0f,  0.0f, -0.8f, 0.5f,  0.0f, // Left Side
+    -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f,
+    5.0f,  0.0f, -0.8f, 0.5f,  0.0f, // Left Side
+    0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f,
+    2.5f,  5.0f, -0.8f, 0.5f,  0.0f, // Left Side
+
+    -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f,
+    5.0f,  0.0f, 0.0f,  0.5f,  -0.8f, // Non-facing side
+    0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f,
+    0.0f,  0.0f, 0.0f,  0.5f,  -0.8f, // Non-facing side
+    0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f,
+    2.5f,  5.0f, 0.0f,  0.5f,  -0.8f, // Non-facing side
+
+    0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f,
+    0.0f,  0.0f, 0.8f,  0.5f,  0.0f, // Right side
+    0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f,
+    5.0f,  0.0f, 0.8f,  0.5f,  0.0f, // Right side
+    0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f,
+    2.5f,  5.0f, 0.8f,  0.5f,  0.0f, // Right side
+
+    0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f,
+    5.0f,  0.0f, 0.0f,  0.5f,  0.8f, // Facing side
+    -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f,
+    0.0f,  0.0f, 0.0f,  0.5f,  0.8f, // Facing side
+    0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f,
+    2.5f,  5.0f, 0.0f,  0.5f,  0.8f // Facing side
+};
+
+// Indices for vertices order
+GLuint pyramid_indices[] = {
+    0,  1,  2,  // Bottom side
+    0,  2,  3,  // Bottom side
+    4,  6,  5,  // Left side
+    7,  9,  8,  // Non-facing side
+    10, 12, 11, // Right side
+    13, 15, 14  // Facing side
+};
+
+int main(int argc, char* argv[])
 {
 
     stbi_set_flip_vertically_on_load(true);
@@ -122,6 +182,9 @@ int  main(int argc, char* argv[])
     game.Init();
     auto texture =
         ResourceManager::LoadTexture("res/awesomeface.png", true, "face");
+    auto brick_texture =
+        ResourceManager::LoadTexture("res/brick.png", true, "brick");
+    brick_texture->setRepeat(true);
 
     // deltaTime variables
     // -------------------
@@ -139,70 +202,85 @@ int  main(int argc, char* argv[])
     //     1, 2, 3  //
     // };
 
-    const float vertices[] = {
-        // Front face
-        -1.0f, -1.0f, 1.0f, 0.5f, // 0: bottom-left
-        1.0f, -1.0f, 1.0f, 0.5f,  // 1: bottom-right
-        1.0f, 1.0f, 1.0f, 0.5f,   // 2: top-right
-        -1.0f, 1.0f, 1.0f, 0.5f,  // 3: top-left
+    Shader default_shader = ResourceManager::LoadShader(
+        "shaders/default/vertex.glsl", "shaders/default/fragment.glsl", NULL,
+        "default");
 
-        // Back face
-        -1.0f, -1.0f, -1.0f, 1.0f, // 4: bottom-left
-        1.0f, -1.0f, -1.0f, 1.0f,  // 5: bottom-right
-        1.0f, 1.0f, -1.0f, 1.0f,   // 6: top-right
-        -1.0f, 1.0f, -1.0f, 1.0f   // 7: top-left
-    };
+    Shader light_shader = ResourceManager::LoadShader(
+        "shaders/light/vertex.glsl", "shaders/light/fragment.glsl", NULL,
+        "light");
 
-    const unsigned int indices[]    = {// Front face
-                                    0, 1, 2, 2, 3, 0,
-                                    // Right face
-                                    1, 5, 6, 6, 2, 1,
-                                    // Back face
-                                    5, 4, 7, 7, 6, 5,
-                                    // Left face
-                                    4, 0, 3, 3, 7, 4,
-                                    // Bottom face
-                                    4, 5, 1, 1, 0, 4,
-                                    // Top face
-                                    3, 2, 6, 6, 7, 3};
-    Shader             basic_shader = ResourceManager::LoadShader(
-        "shaders/basic_textured/vertex.glsl",
-        "shaders/basic_textured/fragment.glsl", NULL, "basic");
+    VertexArray        pyramid_va;
+    VertexBuffer       pyramid_vb(pyramid_vertices, sizeof(pyramid_vertices));
+    IndexBuffer        pyramid_ib(pyramid_indices, 18);
+    VertexBufferLayout pyramid_va_layout;
+    pyramid_va_layout.push(GL_FLOAT, 3);
+    pyramid_va_layout.push(GL_FLOAT, 3);
+    pyramid_va_layout.push(GL_FLOAT, 2);
+    pyramid_va_layout.push(GL_FLOAT, 3);
+    pyramid_va.add_buffer(pyramid_vb, pyramid_va_layout);
 
-    VertexArray        va;
-    VertexBuffer       vb(vertices, sizeof(vertices));
-    IndexBuffer        ib(indices, 36);
-    VertexBufferLayout va_layout;
-    va_layout.push(GL_FLOAT, 3);
-    va_layout.push(GL_FLOAT, 1);
-    va.add_buffer(vb, va_layout);
-
-    texture->bind();
-    // basic_shader.setInteger("texture1", 0);
+    VertexArray        light_va;
+    VertexBuffer       light_vb(light_vertices, sizeof(light_vertices));
+    IndexBuffer        light_ib(light_indices, 36);
+    VertexBufferLayout light_va_layout;
+    light_va_layout.push(GL_FLOAT, 3);
+    light_va.add_buffer(light_vb, light_va_layout);
 
     glm::mat4 projection;
     projection =
         glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
     glm::mat4 model = glm::mat4(1.0f);
-    model =
-        glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model           = glm::scale(model, glm::vec3(1.0f));
+
+    glm::mat4 model2 = glm::mat4(1.0f);
+    model2           = glm::translate(model2, glm::vec3(-4.0f, 4.0f, 0.0f));
 
     glm::mat4 view = glm::mat4(1.0f);
     // note that we're translating the scene in the reverse direction of where
     // we want to move
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -6.0f));
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -0.0f));
 
-    basic_shader.setMatrix4("projection", projection);
-    basic_shader.setMatrix4("model", model);
-    basic_shader.setMatrix4("view", camera.getViewMatrix());
+    glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    glm::vec3 lightPos   = glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::mat4 lightModel = glm::mat4(1.0f);
+    lightModel           = glm::translate(lightModel, lightPos);
 
-    va.unbind();
-    vb.unbind();
-    ib.unbind();
+    glm::vec3 pyramidPos   = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::mat4 pyramidModel = glm::mat4(1.0f);
+    pyramidModel           = glm::translate(pyramidModel, pyramidPos);
 
-    float a = 0.0001f;
+    default_shader.setMatrix4("projection", projection);
+    default_shader.setMatrix4("model", model);
+    default_shader.setMatrix4("view", camera.getViewMatrix());
+    default_shader.setVector4f("lightColor", lightColor);
+
+    light_shader.setMatrix4("projection", projection);
+    light_shader.setMatrix4("model", lightModel);
+    light_shader.setMatrix4("view", camera.getViewMatrix());
+    light_shader.setVector4f("lightColor", lightColor);
+
     while (!glfwWindowShouldClose(window))
     {
+
+        int width  = 0;
+        int height = 0;
+        glfwGetWindowSize(window, &width, &height);
+        projection = glm::perspective(glm::radians(45.0f),
+                                      static_cast<float>(width) /
+                                          static_cast<float>(height),
+                                      0.1f, 100.0f);
+
+        view = camera.getViewMatrix();
+
+        default_shader.setMatrix4("projection", projection);
+        default_shader.setMatrix4("view", view);
+        default_shader.setVector3f("lightPos", lightPos);
+        default_shader.setVector3f("camPos", camera.position);
+        brick_texture->bind(0);
+
+        light_shader.setMatrix4("projection", projection);
+        light_shader.setMatrix4("view", view);
         // calculate delta time
         // --------------------
         float currentFrame = glfwGetTime();
@@ -230,17 +308,20 @@ int  main(int argc, char* argv[])
         // -----------------
         game.Update(deltaTime);
 
-        // model = glm::rotate(model, glm::radians(-55.0f + deltaTime * 0.001f),
-        //                     glm::vec3(1.0f, 0.0f, 0.0f));
-
-        basic_shader.setMatrix4("model", model);
-        basic_shader.setMatrix4("view", camera.getViewMatrix());
-
         // render
         // ------
         RenderAPI::clear();
 
-        renderer.Draw(vb, va, 36, basic_shader);
+        renderer.Draw(light_vb, light_va,
+                      sizeof(light_indices) / sizeof(unsigned int),
+                      light_shader);
+
+        renderer.Draw(pyramid_vb, pyramid_va,
+                      sizeof(pyramid_indices) / sizeof(unsigned int),
+                      default_shader);
+
+        // default_shader.setMatrix4("model", model2);
+        // renderer.Draw(light_vb, light_va, 36, default_shader);
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();

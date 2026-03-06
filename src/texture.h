@@ -8,8 +8,10 @@ class Texture
             bool alpha);
 
     ~Texture();
-    void bind(unsigned int slot = 0);
-    void unbind();
+
+    void setRepeat(bool set) const;
+    void bind(unsigned int slot = 0) const;
+    void unbind() const;
 
     inline unsigned int getWidth()
     {

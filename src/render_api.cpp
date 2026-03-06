@@ -11,10 +11,21 @@ void RenderAPI::clear()
 void RenderAPI::init(unsigned int width, unsigned int height)
 {
     GLCALL(glViewport(0, 0, width, height));
-    GLCALL(glEnable(GL_BLEND));
-    GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     GLCALL(glEnable(GL_DEPTH_TEST));
+}
+void RenderAPI::setBlending(bool enable)
+{
+    if (enable)
+    {
+
+        GLCALL(glEnable(GL_BLEND));
+        GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    }
+    else
+    {
+        GLCALL(glDisable(GL_BLEND));
+    }
 }
 
 void RenderAPI::updateViewPort(unsigned int width, unsigned int height)

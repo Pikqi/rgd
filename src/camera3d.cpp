@@ -1,10 +1,9 @@
 #include "glm/ext/matrix_transform.hpp"
 #include <camera3d.h>
 
-Camera3D::Camera3D()
-    : position(glm::vec3(0.0f, 0.0f, 0.0f)),
-      front(glm::vec3(0.0f, 0.0f, -1.0f)), up(glm::vec3(0.0f, 1.0f, 0.0f)),
-      yaw(0.0f), pitch(0.0f)
+Camera3D::Camera3D(glm::vec3 position)
+    : position(position), front(glm::vec3(0.0f, 0.0f, -1.0f)),
+      up(glm::vec3(0.0f, 1.0f, 0.0f)), yaw(0.0f), pitch(0.0f)
 
 {
     world_up = up;

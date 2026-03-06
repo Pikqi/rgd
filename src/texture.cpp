@@ -23,7 +23,23 @@ Texture::~Texture()
     GLCALL(glDeleteTextures(1, &_id));
 }
 
-void Texture::bind(unsigned int slot)
+void Texture::setRepeat(bool set) const
+{
+    if (set)
+    {
+        GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+        GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+    }
+    else
+    {
+        GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                               GL_CLAMP_TO_EDGE));
+        GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                               GL_CLAMP_TO_EDGE));
+    }
+}
+
+void Texture::bind(unsigned int slot) const
 {
     if (slot > 31)
     {
@@ -34,7 +50,7 @@ void Texture::bind(unsigned int slot)
     GLCALL(glActiveTexture(GL_TEXTURE0 + slot));
     GLCALL(glBindTexture(GL_TEXTURE_2D, _id));
 };
-void Texture::unbind()
+void Texture::unbind() const
 {
     GLCALL(glBindTexture(GL_TEXTURE_2D, 0))
 }

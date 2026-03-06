@@ -1,11 +1,12 @@
 #pragma once
+#include "glm/fwd.hpp"
 #include <glm/glm.hpp>
 
 class Camera3D
 {
 
   public:
-    Camera3D();
+    Camera3D(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f));
     glm::vec3 position;
     glm::vec3 front;
     glm::vec3 up;
@@ -15,8 +16,8 @@ class Camera3D
     float yaw;
     float pitch;
 
-    float sensitivity = 1.0f;
-    float move_speed  = 1.0f;
+    float sensitivity = 0.4f;
+    float move_speed  = 2.0f;
 
     glm::mat4 getViewMatrix() const;
 
