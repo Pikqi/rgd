@@ -41,3 +41,10 @@ add_custom_target(run
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 add_dependencies(run ${PROJECT_NAME})
+
+# --- Debug step --- 
+add_custom_target(debug
+    COMMAND gdb ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		DEPENDS ${PROJECT_NAME}
+)

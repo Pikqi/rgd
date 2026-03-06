@@ -1,8 +1,10 @@
+#include "camera3d.h"
 #include "game.h"
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3.h>
 #include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
 #include "index_buffer.h"
 #include "resource_manager.h"
 #include "shader.h"
@@ -35,6 +37,8 @@ const unsigned int SCREEN_WIDTH = 1720;
 const unsigned int SCREEN_HEIGHT = 890;
 
 Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+Camera3D camera;
 
 bool show_demo_window = false;
 int  main(int argc, char* argv[])
@@ -189,11 +193,13 @@ int  main(int argc, char* argv[])
 
     basic_shader.setMatrix4("projection", projection);
     basic_shader.setMatrix4("model", model);
-    basic_shader.setMatrix4("view", view);
+    basic_shader.setMatrix4("view", camera.getViewMatrix());
 
     va.unbind();
     vb.unbind();
     ib.unbind();
+
+    float a = 0.0001f;
     while (!glfwWindowShouldClose(window))
     {
         // calculate delta time
@@ -202,6 +208,18 @@ int  main(int argc, char* argv[])
         deltaTime          = currentFrame - lastFrame;
         lastFrame          = currentFrame;
         glfwPollEvents();
+
+        glm::vec2 cam_movement = {0.0f, 0.0f};
+        if (game.Keys[GLFW_KEY_W])
+            cam_movement.y += 1.0f;
+        if (game.Keys[GLFW_KEY_S])
+            cam_movement.y -= 1.0f;
+        if (game.Keys[GLFW_KEY_A])
+            cam_movement.x -= 1.0f;
+        if (game.Keys[GLFW_KEY_D])
+            cam_movement.x += 1.0f;
+        if (glm::length(cam_movement) > 0.0f)
+            camera.moveCamera(cam_movement, deltaTime);
 
         // manage user input
         // -----------------
@@ -215,21 +233,29 @@ int  main(int argc, char* argv[])
         //                     glm::vec3(1.0f, 0.0f, 0.0f));
 
         basic_shader.setMatrix4("model", model);
+        basic_shader.setMatrix4("view", camera.getViewMatrix());
 
         // render
         // ------
         RenderAPI::clear();
+
+        renderer.Draw(vb, va, 36, basic_shader);
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        {
+            ImGui::Begin("test");
+            ImGui::SliderFloat("a", &a, 0.00001f, 0.1f);
+            ImGui::End();
+        }
+
         game.Render();
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
-        if (game.debug_mode)
         {
             ImGui::Begin("Hello, world!");
             ImGui::SetWindowPos(
@@ -247,8 +273,6 @@ int  main(int argc, char* argv[])
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        renderer.Draw(vb, va, 36, basic_shader);
 
         render_context.swapBuffers();
     }
@@ -283,6 +307,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
+    static double last_mouse_posx = -1;
+    static double last_mouse_posy = -1;
+
+    if (last_mouse_posx != -1)
+    {
+        const double offset_x = last_mouse_posx - xpos;
+        const double offset_y = last_mouse_posy - ypos;
+
+        camera.mouseMoveCamera(offset_x, offset_y);
+    }
+
+    last_mouse_posx = xpos;
+    last_mouse_posy = ypos;
+
     game.mouse_pos = {xpos, ypos};
 }
 

@@ -18,6 +18,8 @@ Game::Game(unsigned int width, unsigned int height)
 {
     Width  = width;
     Height = height;
+    for (int i = 0; i < 1024; i++)
+        Keys[i] = false;
 }
 Game::~Game() {}
 
