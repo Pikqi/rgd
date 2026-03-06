@@ -2,6 +2,7 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3.h>
+#include "glm/ext/matrix_clip_space.hpp"
 #include "index_buffer.h"
 #include "resource_manager.h"
 #include "shader.h"
@@ -116,35 +117,83 @@ int  main(int argc, char* argv[])
     game.Init();
     auto texture =
         ResourceManager::LoadTexture("res/awesomeface.png", true, "face");
-    texture->bind();
 
     // deltaTime variables
     // -------------------
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
-    float vertices[] = {
-        0.5f,  0.5f,  0.0f, // top right
-        0.5f,  -0.5f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f, // bottom left
-        -0.5f, 0.5f,  0.0f  // top left
+    // float vertices[] = {
+    //     0.5f,  0.5f,  0.0f, // top right
+    //     0.5f,  -0.5f, 0.0f, // bottom right
+    //     -0.5f, -0.5f, 0.0f, // bottom left
+    //     -0.5f, 0.5f,  0.0f  // top left
+    // };
+    // unsigned int indices[] = {
+    //     0, 1, 3, //
+    //     1, 2, 3  //
+    // };
+
+    const float vertices[] = {
+        // Front face
+        -1.0f, -1.0f, 1.0f, 0.5f, // 0: bottom-left
+        1.0f, -1.0f, 1.0f, 0.5f,  // 1: bottom-right
+        1.0f, 1.0f, 1.0f, 0.5f,   // 2: top-right
+        -1.0f, 1.0f, 1.0f, 0.5f,  // 3: top-left
+
+        // Back face
+        -1.0f, -1.0f, -1.0f, 1.0f, // 4: bottom-left
+        1.0f, -1.0f, -1.0f, 1.0f,  // 5: bottom-right
+        1.0f, 1.0f, -1.0f, 1.0f,   // 6: top-right
+        -1.0f, 1.0f, -1.0f, 1.0f   // 7: top-left
     };
-    unsigned int indices[] = {
-        0, 1, 3, //
-        1, 2, 3  //
-    };
-    Shader basic_shader = ResourceManager::LoadShader(
+
+    const unsigned int indices[]    = {// Front face
+                                    0, 1, 2, 2, 3, 0,
+                                    // Right face
+                                    1, 5, 6, 6, 2, 1,
+                                    // Back face
+                                    5, 4, 7, 7, 6, 5,
+                                    // Left face
+                                    4, 0, 3, 3, 7, 4,
+                                    // Bottom face
+                                    4, 5, 1, 1, 0, 4,
+                                    // Top face
+                                    3, 2, 6, 6, 7, 3};
+    Shader             basic_shader = ResourceManager::LoadShader(
         "shaders/basic_textured/vertex.glsl",
         "shaders/basic_textured/fragment.glsl", NULL, "basic");
 
     VertexArray        va;
     VertexBuffer       vb(vertices, sizeof(vertices));
-    IndexBuffer        ib(indices, 6);
+    IndexBuffer        ib(indices, 36);
     VertexBufferLayout va_layout;
     va_layout.push(GL_FLOAT, 3);
+    va_layout.push(GL_FLOAT, 1);
     va.add_buffer(vb, va_layout);
-    basic_shader.setInteger("texture1", 0);
 
+    texture->bind();
+    // basic_shader.setInteger("texture1", 0);
+
+    glm::mat4 projection;
+    projection =
+        glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    glm::mat4 model = glm::mat4(1.0f);
+    model =
+        glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    glm::mat4 view = glm::mat4(1.0f);
+    // note that we're translating the scene in the reverse direction of where
+    // we want to move
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -6.0f));
+
+    basic_shader.setMatrix4("projection", projection);
+    basic_shader.setMatrix4("model", model);
+    basic_shader.setMatrix4("view", view);
+
+    va.unbind();
+    vb.unbind();
+    ib.unbind();
     while (!glfwWindowShouldClose(window))
     {
         // calculate delta time
@@ -161,6 +210,11 @@ int  main(int argc, char* argv[])
         // update game state
         // -----------------
         game.Update(deltaTime);
+
+        // model = glm::rotate(model, glm::radians(-55.0f + deltaTime * 0.001f),
+        //                     glm::vec3(1.0f, 0.0f, 0.0f));
+
+        basic_shader.setMatrix4("model", model);
 
         // render
         // ------
@@ -194,7 +248,7 @@ int  main(int argc, char* argv[])
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        renderer.Draw(vb, va, basic_shader);
+        renderer.Draw(vb, va, 36, basic_shader);
 
         render_context.swapBuffers();
     }

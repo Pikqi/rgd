@@ -3,7 +3,7 @@
 #include "rgd.h"
 
 IndexBuffer::IndexBuffer(const void* data, unsigned int count)
-    : _size(count * sizeof(unsigned int))
+    : _count(count * sizeof(unsigned int))
 {
     GLCALL(glGenBuffers(1, &_id));
     GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id));

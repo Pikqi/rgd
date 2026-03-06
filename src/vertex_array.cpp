@@ -26,6 +26,7 @@ void VertexArray::unbind() const
 void VertexArray::add_buffer(const VertexBuffer&       vb,
                              const VertexBufferLayout& layout)
 {
+    bind();
     vb.bind();
     const auto& elements = layout.get_elements();
 

@@ -6,7 +6,7 @@ class Renderer
 {
   public:
     void Draw(const VertexBuffer& vb, const VertexArray& va,
-              const Shader& shader) const;
+              const unsigned int verticies_count, const Shader& shader) const;
     void Clear();
 
   private:

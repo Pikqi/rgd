@@ -3,12 +3,13 @@
 #include <rgd.h>
 
 void Renderer::Draw(const VertexBuffer& vb, const VertexArray& va,
-                    const Shader& shader) const
+                    const unsigned int verticies_count,
+                    const Shader&      shader) const
 {
     vb.bind();
     va.bind();
     shader.use();
 
-    GLCALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+    GLCALL(glDrawElements(GL_TRIANGLES, verticies_count, GL_UNSIGNED_INT, 0));
 }
 void Renderer::Clear() {}
