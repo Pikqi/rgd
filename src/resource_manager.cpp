@@ -9,6 +9,7 @@
 #include <string>
 
 #include "logger.h"
+#include "rgd.h"
 #include "stb_image.h"
 #include "texture.h"
 
@@ -112,7 +113,8 @@ std::shared_ptr<Texture> ResourceManager::loadTextureFromFile(const char* file,
     {
         LOG_WARN("Cant open texture: {}", file);
     }
-    auto texture = std::make_unique<Texture>(data, width, height, alpha);
+    auto texture =
+        std::make_unique<Texture>(data, width, height, alpha, nrChannels);
 
     stbi_image_free(data);
     return texture;

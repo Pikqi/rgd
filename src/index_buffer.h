@@ -3,11 +3,12 @@
 class IndexBuffer
 {
   public:
+    IndexBuffer();
     IndexBuffer(const void* data, unsigned int count);
     void bind() const;
     void unbind() const;
 
-    inline unsigned int get_count()
+    inline unsigned int get_count() const
     {
         return _count;
     }

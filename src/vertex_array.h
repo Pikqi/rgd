@@ -45,6 +45,10 @@ class VertexArray
 {
   public:
     VertexArray();
+    VertexArray(const VertexArray&) = delete;
+    VertexArray(VertexArray&&) = delete;
+    VertexArray& operator=(const VertexArray&) = delete;
+    VertexArray& operator=(VertexArray&&) = delete;
     ~VertexArray();
 
     void add_buffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
@@ -53,5 +57,5 @@ class VertexArray
     void unbind() const;
 
   private:
-    unsigned int _id;
+    unsigned int _id = 0;
 };

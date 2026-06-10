@@ -1,16 +1,20 @@
 #pragma once
+#include "shader.h"
 #include <glad/glad.h>
 
 class Texture
 {
   public:
     Texture(const unsigned char* data, unsigned int width, unsigned int height,
-            bool alpha);
+            bool alpha, int num_of_channels);
 
     ~Texture();
 
     void setRepeat(bool set) const;
     void bind(unsigned int slot = 0) const;
+
+    void bindOnShader(Shader& shader, unsigned int slot,
+                      const char* uniform_name) const;
     void unbind() const;
 
     inline unsigned int getWidth()

@@ -35,7 +35,7 @@ void debugDrawLine(const glm::vec2 a, const glm::vec2 b)
 }
 void debugDrawRect(const glm::vec2 center, const glm::vec2 size){
 	auto wh = size.x / 2.0f;
-	auto hh = size.x / 2.0f;
+	auto hh = size.y / 2.0f;
 	debugDrawLine({center.x - wh, center.y - hh}, {center.x - wh, center.y + hh});// left
 	debugDrawLine({center.x - wh, center.y - hh}, {center.x + wh, center.y - hh});// top
 	debugDrawLine({center.x + wh, center.y - hh}, {center.x + wh, center.y + hh});// right
