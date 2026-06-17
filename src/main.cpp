@@ -1,12 +1,13 @@
 #include "camera3d.h"
 #include "game.h"
+#include "post_process_pipeline.h"
 #include "terrain.h"
 #include <GLFW/glfw3.h>
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "primitives.h"
-#include "render_context.h"
 #include "render_api.h"
+#include "render_context.h"
 #include "renderer.h"
 #include "resource_manager.h"
 #include "shader.h"
@@ -50,6 +51,11 @@ glm::mat4 pyramidModel = glm::mat4(1.0f);
 glm::vec3 floorPos     = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::mat4 floorModel   = glm::mat4(1.0f);
 
+static PostProcessPipeline* g_pipeline = nullptr;
+Shader                      tonemap_shader;
+float                       exposure   = 1.0f;
+bool                        applyGamma = true;
+
 int main(int argc, char* argv[])
 {
     stbi_set_flip_vertically_on_load(true);
@@ -81,6 +87,9 @@ int main(int argc, char* argv[])
     RenderAPI::init(SCREEN_WIDTH, SCREEN_HEIGHT);
     RenderAPI::setClearColor(0.05f, 0.05f, 0.08f, 1.0f);
     Renderer renderer;
+
+    static PostProcessPipeline pipeline(SCREEN_WIDTH, SCREEN_HEIGHT);
+    g_pipeline = &pipeline;
 
     LOG_INFO("IMGUI Init");
     IMGUI_CHECKVERSION();
@@ -130,6 +139,10 @@ int main(int argc, char* argv[])
         "shaders/light/vertex.glsl", "shaders/light/fragment.glsl", NULL,
         "light");
 
+    tonemap_shader = ResourceManager::LoadShader(
+        "shaders/postprocess/quad.vert", "shaders/postprocess/tonemap.frag",
+        nullptr, "tonemap");
+
     Mesh light_mesh = primitives::createCube();
     lightModel      = glm::translate(lightModel, lightPos);
 
@@ -165,7 +178,7 @@ int main(int argc, char* argv[])
         game.ProcessInput(deltaTime);
         game.Update(deltaTime);
 
-        renderer.clear();
+        pipeline.beginScene();
 
         terrain_shader.setMatrix4("projection", projection);
         terrain_shader.setMatrix4("view", view);
@@ -180,6 +193,10 @@ int main(int argc, char* argv[])
         light_shader.setMatrix4("view", camera.getViewMatrix());
         light_shader.setVector4f("lightColor", lightColor);
         renderer.draw(light_mesh, light_shader);
+
+        tonemap_shader.setFloat("uExposure", exposure);
+        tonemap_shader.setInteger("uApplyGamma", applyGamma);
+        pipeline.present(tonemap_shader);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -230,6 +247,13 @@ int main(int argc, char* argv[])
             ImGui::Value("Mouse X", game.mouse_pos.x);
             ImGui::SameLine();
             ImGui::Value("Mouse Y", game.mouse_pos.y);
+            ImGui::End();
+        }
+
+        {
+            ImGui::Begin("Post FX");
+            ImGui::SliderFloat("Exposure", &exposure, 0.0f, 3.0f);
+            ImGui::Checkbox("Gamma correct", &applyGamma);
             ImGui::End();
         }
 
@@ -299,5 +323,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     RenderAPI::setViewport(width, height);
+    if (g_pipeline)
+        g_pipeline->resize(width, height);
     game.UpdateScreenSize(width, height);
 }

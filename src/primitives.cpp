@@ -81,30 +81,30 @@ Mesh createFullscreenQuad()
     std::vector<Vertex>       vertices;
     std::vector<unsigned int> indices;
 
-    glm::vec3 ndc_bl = glm::vec3(-1.0f, -1.0f, 0.0f);
-    glm::vec3 ndc_br = glm::vec3(1.0f, -1.0f, 0.0f);
-    glm::vec3 ndc_tr = glm::vec3(1.0f, 1.0f, 0.0f);
-    glm::vec3 ndc_tl = glm::vec3(-1.0f, 1.0f, 0.0f);
-
-    glm::vec2 uv_bl = glm::vec2(0.0f, 0.0f);
-    glm::vec2 uv_br = glm::vec2(1.0f, 0.0f);
-    glm::vec2 uv_tr = glm::vec2(1.0f, 1.0f);
-    glm::vec2 uv_tl = glm::vec2(0.0f, 1.0f);
-
     glm::vec3 normal = glm::vec3(0.0f, 0.0f, 1.0f);
 
-    vertices.push_back({ndc_bl, uv_bl, normal}); // 0
-    vertices.push_back({ndc_br, uv_br, normal}); // 1
-    vertices.push_back({ndc_tr, uv_tr, normal}); // 2
-    vertices.push_back({ndc_tl, uv_tl, normal}); // 3
+    // Two triangles, 6 vertices, no shared vertices.
+    // Triangle 1: BL, BR, TR  (bottom-right half)
+    vertices.push_back(
+        {glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f), normal}); // 0
+    vertices.push_back(
+        {glm::vec3(1.0f, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f), normal}); // 1
+    vertices.push_back(
+        {glm::vec3(1.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f), normal}); // 2
+    // Triangle 2: BL, TR, TL  (top-left half)
+    vertices.push_back(
+        {glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f), normal}); // 3
+    vertices.push_back(
+        {glm::vec3(1.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f), normal}); // 4
+    vertices.push_back(
+        {glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f), normal}); // 5
 
     indices.push_back(0);
     indices.push_back(1);
     indices.push_back(2);
-
-    indices.push_back(0);
-    indices.push_back(2);
     indices.push_back(3);
+    indices.push_back(4);
+    indices.push_back(5);
 
     Mesh mesh;
     mesh.setVertices(vertices);

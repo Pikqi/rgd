@@ -36,6 +36,10 @@ class Mesh
     {
         return static_cast<unsigned int>(_indexCount);
     }
+    unsigned int getVertexCount() const
+    {
+        return static_cast<unsigned int>(_vertexCount);
+    }
     bool isUploaded() const
     {
         return _uploaded;
