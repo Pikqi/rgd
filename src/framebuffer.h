@@ -20,6 +20,10 @@ class Framebuffer
     {
         return _colorTex;
     }
+    unsigned int getId() const
+    {
+        return _fbo;
+    }
     unsigned int width() const
     {
         return _w;

@@ -1,6 +1,6 @@
 #include "camera3d.h"
 #include "game.h"
-#include "post_process_pipeline.h"
+#include "post_process_chain.h"
 #include "terrain.h"
 #include <GLFW/glfw3.h>
 #include "glm/ext/matrix_transform.hpp"
@@ -51,10 +51,15 @@ glm::mat4 pyramidModel = glm::mat4(1.0f);
 glm::vec3 floorPos     = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::mat4 floorModel   = glm::mat4(1.0f);
 
-static PostProcessPipeline* g_pipeline = nullptr;
-Shader                      tonemap_shader;
-float                       exposure   = 1.0f;
-bool                        applyGamma = true;
+static PostProcessChain* g_pipeline = nullptr;
+Shader                   tonemap_shader;
+Shader                   vignette_shader;
+float                    exposure   = 1.0f;
+bool                     applyGamma = true;
+
+float vignetteAmount = 0.335f;
+float vignetteRadius = 1.01;
+float vignetteSoft   = 0.4f;
 
 int main(int argc, char* argv[])
 {
@@ -88,7 +93,7 @@ int main(int argc, char* argv[])
     RenderAPI::setClearColor(0.05f, 0.05f, 0.08f, 1.0f);
     Renderer renderer;
 
-    static PostProcessPipeline pipeline(SCREEN_WIDTH, SCREEN_HEIGHT);
+    static PostProcessChain pipeline(SCREEN_WIDTH, SCREEN_HEIGHT);
     g_pipeline = &pipeline;
 
     LOG_INFO("IMGUI Init");
@@ -142,6 +147,12 @@ int main(int argc, char* argv[])
     tonemap_shader = ResourceManager::LoadShader(
         "shaders/postprocess/quad.vert", "shaders/postprocess/tonemap.frag",
         nullptr, "tonemap");
+    vignette_shader = ResourceManager::LoadShader(
+        "shaders/postprocess/quad.vert", "shaders/postprocess/vignette.frag",
+        nullptr, "vignette");
+
+    pipeline.addEffect(&tonemap_shader, "Tonemap");
+    pipeline.addEffect(&vignette_shader, "Vignette");
 
     Mesh light_mesh = primitives::createCube();
     lightModel      = glm::translate(lightModel, lightPos);
@@ -196,7 +207,10 @@ int main(int argc, char* argv[])
 
         tonemap_shader.setFloat("uExposure", exposure);
         tonemap_shader.setInteger("uApplyGamma", applyGamma);
-        pipeline.present(tonemap_shader);
+        vignette_shader.setFloat("uIntensity", vignetteAmount);
+        vignette_shader.setFloat("uRadius", vignetteRadius);
+        vignette_shader.setFloat("uSoftness", vignetteSoft);
+        pipeline.run(vignette_shader);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -254,6 +268,27 @@ int main(int argc, char* argv[])
             ImGui::Begin("Post FX");
             ImGui::SliderFloat("Exposure", &exposure, 0.0f, 3.0f);
             ImGui::Checkbox("Gamma correct", &applyGamma);
+            ImGui::SliderFloat("Vignette intensity", &vignetteAmount, 0.0f,
+                               1.0f);
+            ImGui::SliderFloat("Vignette radius", &vignetteRadius, 0.1f, 1.5f);
+            ImGui::SliderFloat("Vignette softness", &vignetteSoft, 0.0f, 1.0f);
+            ImGui::End();
+        }
+
+        {
+            ImGui::Begin("Pipeline Debug");
+            ImGui::Text("Scene");
+            ImGui::Image((ImTextureID)(intptr_t)pipeline.scene().colorTex(),
+                         ImVec2(256, 144), ImVec2(0.0f, 1.0f),
+                         ImVec2(1.0f, 0.0f));
+            for (const auto& e : pipeline.effects())
+            {
+                ImGui::Separator();
+                ImGui::Text("%s", e->name());
+                ImGui::Image((ImTextureID)(intptr_t)e->outputTex(),
+                             ImVec2(256, 144), ImVec2(0.0f, 1.0f),
+                             ImVec2(1.0f, 0.0f));
+            }
             ImGui::End();
         }
 
