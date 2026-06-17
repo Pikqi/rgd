@@ -28,6 +28,11 @@ Mesh TerrainGenerator::generate(const glm::ivec2&  size,
         }
     }
 
+    for (size_t i = 0; i < vertices.size(); ++i)
+    {
+        vertices[i].normal = calculateNormal(vertices, i, size);
+    }
+
     for (int z = 0; z < size.y - 1; ++z)
     {
         for (int x = 0; x < size.x - 1; ++x)
@@ -71,5 +76,20 @@ glm::vec3 TerrainGenerator::calculateNormal(const std::vector<Vertex>& vertices,
                                             size_t                     index,
                                             const glm::ivec2&          size)
 {
-    return glm::vec3(0.0f, 1.0f, 0.0f);
+    const int x = static_cast<int>(index) % size.x;
+    const int z = static_cast<int>(index) / size.x;
+
+    const float hL = (x > 0) ? vertices[index - 1].position.y
+                             : vertices[index].position.y;
+    const float hR =
+        (x < size.x - 1) ? vertices[index + 1].position.y : vertices[index].position.y;
+    const float hD = (z > 0) ? vertices[index - size.x].position.y
+                             : vertices[index].position.y;
+    const float hU =
+        (z < size.y - 1) ? vertices[index + size.x].position.y : vertices[index].position.y;
+
+    const glm::vec3 tx(2.0f, hR - hL, 0.0f);
+    const glm::vec3 tz(0.0f, hU - hD, 2.0f);
+
+    return glm::normalize(glm::cross(tz, tx));
 }
