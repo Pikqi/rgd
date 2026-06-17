@@ -22,29 +22,31 @@
 #include <spdlog/spdlog.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void mouse_button_callback(GLFWwindow* window, int button, int action,
+                           int mods);
+void key_callback(GLFWwindow* window, int key, int scancode, int action,
+                  int mode);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 
-const unsigned int SCREEN_WIDTH = 1720;
+const unsigned int SCREEN_WIDTH  = 1720;
 const unsigned int SCREEN_HEIGHT = 890;
 
-Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
+Game     game(SCREEN_WIDTH, SCREEN_HEIGHT);
 Camera3D camera(glm::vec3(0.0f, 2.0f, -5.0f));
 
 bool show_demo_window = false;
 
 glm::mat4 projection;
 glm::mat4 model = glm::mat4(1.0f);
-glm::mat4 view = glm::mat4(1.0f);
+glm::mat4 view  = glm::mat4(1.0f);
 
-glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
-glm::mat4 lightModel = glm::mat4(1.0f);
-glm::vec3 pyramidPos = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec4 lightColor   = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+glm::vec3 lightPos     = glm::vec3(0.5f, 0.5f, 0.5f);
+glm::mat4 lightModel   = glm::mat4(1.0f);
+glm::vec3 pyramidPos   = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::mat4 pyramidModel = glm::mat4(1.0f);
-glm::vec3 floorPos = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::mat4 floorModel = glm::mat4(1.0f);
+glm::vec3 floorPos     = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::mat4 floorModel   = glm::mat4(1.0f);
 
 int main(int argc, char* argv[])
 {
@@ -85,7 +87,8 @@ int main(int argc, char* argv[])
 
     ImGui::StyleColorsDark();
 
-    float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
+    float main_scale =
+        ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(main_scale);
     style.FontScaleDpi = main_scale;
@@ -100,58 +103,57 @@ int main(int argc, char* argv[])
     game.Init();
 
     Shader default_shader = ResourceManager::LoadShader(
-        "shaders/default/vertex.glsl", "shaders/default/fragment.glsl", NULL, "default");
+        "shaders/default/vertex.glsl", "shaders/default/fragment.glsl", NULL,
+        "default");
 
     Shader specular_shader = ResourceManager::LoadShader(
         "shaders/specular_map/vertex.glsl",
         "shaders/specular_map/fragment.glsl", NULL, "specular");
 
     Shader light_shader = ResourceManager::LoadShader(
-        "shaders/light/vertex.glsl", "shaders/light/fragment.glsl", NULL, "light");
+        "shaders/light/vertex.glsl", "shaders/light/fragment.glsl", NULL,
+        "light");
 
-    GLfloat light_vertices[] = {
-        -0.1f, -0.1f, 0.1f,  -0.1f, -0.1f, -0.1f, 0.1f, -0.1f,
-        -0.1f, 0.1f,  -0.1f, 0.1f,  -0.1f, 0.1f,  0.1f, -0.1f,
-        0.1f,  -0.1f, 0.1f,  0.1f,  -0.1f, 0.1f,  0.1f, 0.1f};
+    GLfloat light_vertices[] = {-0.1f, -0.1f, 0.1f,  -0.1f, -0.1f, -0.1f,
+                                0.1f,  -0.1f, -0.1f, 0.1f,  -0.1f, 0.1f,
+                                -0.1f, 0.1f,  0.1f,  -0.1f, 0.1f,  -0.1f,
+                                0.1f,  0.1f,  -0.1f, 0.1f,  0.1f,  0.1f};
 
-    GLuint light_indices[] = {0, 1, 2, 0, 2, 3, 0, 4, 7, 0, 7, 3, 3, 7, 6, 3, 6, 2,
-                              2, 6, 5, 2, 5, 1, 1, 5, 4, 1, 4, 0, 4, 5, 6, 4, 6, 7};
+    GLuint light_indices[] = {0, 1, 2, 0, 2, 3, 0, 4, 7, 0, 7, 3,
+                              3, 7, 6, 3, 6, 2, 2, 6, 5, 2, 5, 1,
+                              1, 5, 4, 1, 4, 0, 4, 5, 6, 4, 6, 7};
 
-    VertexArray light_va;
-    VertexBuffer light_vb(light_vertices, sizeof(light_vertices));
-    IndexBuffer light_ib(light_indices, 36);
+    VertexArray        light_va;
+    VertexBuffer       light_vb(light_vertices, sizeof(light_vertices));
+    IndexBuffer        light_ib(light_indices, 36);
     VertexBufferLayout light_va_layout;
     light_va_layout.push(GL_FLOAT, 3);
     light_va.add_buffer(light_vb, light_va_layout);
 
     lightModel = glm::translate(lightModel, lightPos);
 
-    auto brick_texture = ResourceManager::LoadTexture("res/brick.png", true, "brick");
+    auto brick_texture =
+        ResourceManager::LoadTexture("res/brick.png", true, "brick");
     brick_texture->setRepeat(true);
-
-    auto planks_texture = ResourceManager::LoadTexture("res/planks.png", true, "planks");
-    planks_texture->setRepeat(true);
-
-    auto planks_texture_spec = ResourceManager::LoadTexture("res/planksSpec.png", true, "planks_spec");
-    planks_texture_spec->setRepeat(true);
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
     while (!glfwWindowShouldClose(window))
     {
-        int width = 0;
+        int width  = 0;
         int height = 0;
         glfwGetWindowSize(window, &width, &height);
         projection = glm::perspective(glm::radians(45.0f),
-                                      static_cast<float>(width) / static_cast<float>(height),
+                                      static_cast<float>(width) /
+                                          static_cast<float>(height),
                                       0.1f, 100.0f);
 
         view = camera.getViewMatrix();
 
         float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        deltaTime          = currentFrame - lastFrame;
+        lastFrame          = currentFrame;
         glfwPollEvents();
 
         glm::vec2 cam_movement = {0.0f, 0.0f};
@@ -205,7 +207,8 @@ int main(int argc, char* argv[])
 
         {
             ImGui::Begin("Hello, world!");
-            ImGui::SetWindowPos({static_cast<float>(game.Width) - 400.0f, 0.0f});
+            ImGui::SetWindowPos(
+                {static_cast<float>(game.Width) - 400.0f, 0.0f});
             ImGui::SetWindowSize({400.0f, static_cast<float>(game.Height)});
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                         1000.0f / io.Framerate, io.Framerate);
@@ -231,7 +234,8 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+void key_callback(GLFWwindow* window, int key, int scancode, int action,
+                  int mode)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
