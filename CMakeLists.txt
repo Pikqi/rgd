@@ -10,6 +10,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Gather all .cpp and .c files in src/
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
 
+set(THIRD_PARTY_SOURCES "include/glad/glad.c")
+
 file(GLOB IMGUI_SOURCES
     "include/imgui/*.cpp"
     "include/imgui/backends/imgui_impl_glfw.cpp"
@@ -17,7 +19,7 @@ file(GLOB IMGUI_SOURCES
 )
 
 # Create executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES} )
+add_executable(${PROJECT_NAME} ${SOURCES} ${THIRD_PARTY_SOURCES} ${IMGUI_SOURCES} )
 
 # Include directories (GLAD and your headers)
 target_include_directories(${PROJECT_NAME} PUBLIC include src include/imgui include/imgui/backends)
