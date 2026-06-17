@@ -2,13 +2,9 @@
 #include <glad/glad.h>
 #include "rgd.h"
 
-IndexBuffer::IndexBuffer()
-    : _id(0), _count(0)
-{
-}
+IndexBuffer::IndexBuffer() : _id(0), _count(0) {}
 
-IndexBuffer::IndexBuffer(const void* data, unsigned int count)
-    : _count(count)
+IndexBuffer::IndexBuffer(const void* data, unsigned int count) : _count(count)
 {
     GLCALL(glGenBuffers(1, &_id));
     GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id));

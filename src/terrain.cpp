@@ -9,7 +9,7 @@ Terrain::Terrain(const glm::ivec2& size, const NoiseParams& params)
 void Terrain::regenerate(const NoiseParams& params)
 {
     _params = params;
-    _mesh = TerrainGenerator::generate(_size, params);
+    _mesh   = TerrainGenerator::generate(_size, params);
 }
 
 void Terrain::draw(const Shader& shader) const

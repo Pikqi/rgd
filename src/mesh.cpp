@@ -9,13 +9,14 @@ Mesh::~Mesh() {}
 void Mesh::setVertices(const std::vector<Vertex>& vertices)
 {
     _vertexCount = vertices.size();
-    _vbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
+    _vbo = std::make_unique<VertexBuffer>(vertices.data(),
+                                          vertices.size() * sizeof(Vertex));
 }
 
 void Mesh::setIndices(const std::vector<unsigned int>& indices)
 {
     _indexCount = indices.size();
-    _ibo = std::make_unique<IndexBuffer>(indices.data(), indices.size());
+    _ibo        = std::make_unique<IndexBuffer>(indices.data(), indices.size());
 }
 
 void Mesh::uploadToGPU()

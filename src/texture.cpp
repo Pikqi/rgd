@@ -23,8 +23,8 @@ Texture::Texture(const unsigned char* data, unsigned int width,
                             GL_UNSIGNED_BYTE, data));
         break;
     case 3:
-        GLCALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0,
-                            GL_RGB, GL_UNSIGNED_BYTE, data));
+        GLCALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB,
+                            GL_UNSIGNED_BYTE, data));
         break;
     case 4:
         GLCALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,

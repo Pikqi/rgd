@@ -2,9 +2,10 @@
 #include "logger.h"
 #include <stb_perlin.h>
 
-Mesh TerrainGenerator::generate(const glm::ivec2& size, const NoiseParams& params)
+Mesh TerrainGenerator::generate(const glm::ivec2&  size,
+                                const NoiseParams& params)
 {
-    std::vector<Vertex> vertices;
+    std::vector<Vertex>       vertices;
     std::vector<unsigned int> indices;
 
     vertices.reserve(size.x * size.y);
@@ -16,9 +17,12 @@ Mesh TerrainGenerator::generate(const glm::ivec2& size, const NoiseParams& param
             Vertex vertex;
             vertex.position.x = static_cast<float>(x);
             vertex.position.z = static_cast<float>(z);
-            vertex.position.y = sampleNoise(static_cast<float>(x), static_cast<float>(z), params);
-            vertex.texCoord.x = static_cast<float>(x) / static_cast<float>(size.x);
-            vertex.texCoord.y = static_cast<float>(z) / static_cast<float>(size.y);
+            vertex.position.y = sampleNoise(static_cast<float>(x),
+                                            static_cast<float>(z), params);
+            vertex.texCoord.x =
+                static_cast<float>(x) / static_cast<float>(size.x);
+            vertex.texCoord.y =
+                static_cast<float>(z) / static_cast<float>(size.y);
             vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
             vertices.push_back(vertex);
         }
@@ -28,9 +32,9 @@ Mesh TerrainGenerator::generate(const glm::ivec2& size, const NoiseParams& param
     {
         for (int x = 0; x < size.x - 1; ++x)
         {
-            unsigned int topLeft = z * size.x + x;
-            unsigned int topRight = topLeft + 1;
-            unsigned int bottomLeft = (z + 1) * size.x + x;
+            unsigned int topLeft     = z * size.x + x;
+            unsigned int topRight    = topLeft + 1;
+            unsigned int bottomLeft  = (z + 1) * size.x + x;
             unsigned int bottomRight = bottomLeft + 1;
 
             indices.push_back(topLeft);
@@ -48,7 +52,8 @@ Mesh TerrainGenerator::generate(const glm::ivec2& size, const NoiseParams& param
     mesh.setIndices(indices);
     mesh.uploadToGPU();
 
-    LOG_INFO("Terrain generated: {} vertices, {} indices", vertices.size(), indices.size());
+    LOG_INFO("Terrain generated: {} vertices, {} indices", vertices.size(),
+             indices.size());
 
     return mesh;
 }
@@ -56,19 +61,15 @@ Mesh TerrainGenerator::generate(const glm::ivec2& size, const NoiseParams& param
 float TerrainGenerator::sampleNoise(float x, float z, const NoiseParams& params)
 {
     float noise = stb_perlin_fbm_noise3(
-        x * params.frequency,
-        0.0f,
-        z * params.frequency,
-        params.lacunarity,
-        params.persistence,
-        static_cast<int>(params.octaves)
-    );
+        x * params.frequency, 0.0f, z * params.frequency, params.lacunarity,
+        params.persistence, static_cast<int>(params.octaves));
 
     return noise * params.amplitude;
 }
 
 glm::vec3 TerrainGenerator::calculateNormal(const std::vector<Vertex>& vertices,
-                                            size_t index, const glm::ivec2& size)
+                                            size_t                     index,
+                                            const glm::ivec2&          size)
 {
     return glm::vec3(0.0f, 1.0f, 0.0f);
 }

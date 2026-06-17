@@ -2,10 +2,7 @@
 #include <vertex_buffer.h>
 #include <rgd.h>
 
-VertexBuffer::VertexBuffer()
-    : _id(0)
-{
-}
+VertexBuffer::VertexBuffer() : _id(0) {}
 
 VertexBuffer::VertexBuffer(const void* data, unsigned int size)
 {

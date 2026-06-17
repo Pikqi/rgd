@@ -45,10 +45,10 @@ class VertexArray
 {
   public:
     VertexArray();
-    VertexArray(const VertexArray&) = delete;
-    VertexArray(VertexArray&&) = delete;
+    VertexArray(const VertexArray&)            = delete;
+    VertexArray(VertexArray&&)                 = delete;
     VertexArray& operator=(const VertexArray&) = delete;
-    VertexArray& operator=(VertexArray&&) = delete;
+    VertexArray& operator=(VertexArray&&)      = delete;
     ~VertexArray();
 
     void add_buffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
