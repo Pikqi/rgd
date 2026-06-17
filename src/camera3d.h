@@ -17,7 +17,7 @@ class Camera3D
     float pitch;
 
     float sensitivity = 0.4f;
-    float move_speed  = 2.0f;
+    float move_speed  = 10.0f;
 
     glm::mat4 getViewMatrix() const;
 
