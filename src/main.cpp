@@ -34,7 +34,8 @@ const unsigned int SCREEN_HEIGHT = 890;
 Game     game(SCREEN_WIDTH, SCREEN_HEIGHT);
 Camera3D camera(glm::vec3(0.0f, 2.0f, -5.0f));
 
-bool show_demo_window = false;
+bool show_demo_window   = false;
+bool mouse_look_enabled = true;
 
 glm::mat4 projection;
 glm::mat4 model = glm::mat4(1.0f);
@@ -198,7 +199,6 @@ int main(int argc, char* argv[])
 
         {
             ImGui::Begin("Terrain Controls");
-            ImGui::Text("Terrain generation coming soon...");
             ImGui::Text("Controls:");
             ImGui::Text("- WASD to move camera");
             ImGui::Text("- Mouse to look around");
@@ -257,7 +257,7 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
     static double last_mouse_posx = -1;
     static double last_mouse_posy = -1;
 
-    if (last_mouse_posx != -1)
+    if (last_mouse_posx != -1 && mouse_look_enabled)
     {
         const double offset_x = last_mouse_posx - xpos;
         const double offset_y = last_mouse_posy - ypos;
@@ -273,6 +273,9 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+        mouse_look_enabled = !mouse_look_enabled;
+
     if (action == GLFW_PRESS)
         game.Keys[button] = true;
     else if (action == GLFW_RELEASE)
