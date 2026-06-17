@@ -10,7 +10,11 @@ class Terrain
     Terrain(const glm::ivec2& size, const NoiseParams& params);
 
     void regenerate(const NoiseParams& params);
-    void draw(const Shader& shader) const;
+
+    const Mesh& getMesh() const
+    {
+        return _mesh;
+    }
 
     const glm::mat4& getTransform() const
     {

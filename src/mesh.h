@@ -29,8 +29,13 @@ class Mesh
     void setVertices(const std::vector<Vertex>& vertices);
     void setIndices(const std::vector<unsigned int>& indices);
     void uploadToGPU();
-    void draw(const Shader& shader) const;
 
+    void bind() const;
+
+    unsigned int getIndexCount() const
+    {
+        return static_cast<unsigned int>(_indexCount);
+    }
     bool isUploaded() const
     {
         return _uploaded;

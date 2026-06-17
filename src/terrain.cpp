@@ -11,8 +11,3 @@ void Terrain::regenerate(const NoiseParams& params)
     _params = params;
     _mesh   = TerrainGenerator::generate(_size, params);
 }
-
-void Terrain::draw(const Shader& shader) const
-{
-    _mesh.draw(shader);
-}

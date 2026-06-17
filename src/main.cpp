@@ -4,19 +4,16 @@
 #include <GLFW/glfw3.h>
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float3.hpp"
-#include "index_buffer.h"
+#include "primitives.h"
+#include "render_context.h"
+#include "render_api.h"
+#include "renderer.h"
 #include "resource_manager.h"
 #include "shader.h"
-#include "vertex_array.h"
-#include "vertex_buffer.h"
 #include <cstdint>
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_glfw.h>
-#include <render_context.h>
-#include <render_api.h>
-#include <rgd.h>
-#include <renderer.h>
 #include <stb_image.h>
 
 #include <logger.h>
@@ -82,6 +79,7 @@ int main(int argc, char* argv[])
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     RenderAPI::init(SCREEN_WIDTH, SCREEN_HEIGHT);
+    RenderAPI::setClearColor(0.05f, 0.05f, 0.08f, 1.0f);
     Renderer renderer;
 
     LOG_INFO("IMGUI Init");
@@ -132,23 +130,8 @@ int main(int argc, char* argv[])
         "shaders/light/vertex.glsl", "shaders/light/fragment.glsl", NULL,
         "light");
 
-    GLfloat light_vertices[] = {-0.1f, -0.1f, 0.1f,  -0.1f, -0.1f, -0.1f,
-                                0.1f,  -0.1f, -0.1f, 0.1f,  -0.1f, 0.1f,
-                                -0.1f, 0.1f,  0.1f,  -0.1f, 0.1f,  -0.1f,
-                                0.1f,  0.1f,  -0.1f, 0.1f,  0.1f,  0.1f};
-
-    GLuint light_indices[] = {0, 1, 2, 0, 2, 3, 0, 4, 7, 0, 7, 3,
-                              3, 7, 6, 3, 6, 2, 2, 6, 5, 2, 5, 1,
-                              1, 5, 4, 1, 4, 0, 4, 5, 6, 4, 6, 7};
-
-    VertexArray        light_va;
-    VertexBuffer       light_vb(light_vertices, sizeof(light_vertices));
-    IndexBuffer        light_ib(light_indices, 36);
-    VertexBufferLayout light_va_layout;
-    light_va_layout.push(GL_FLOAT, 3);
-    light_va.add_buffer(light_vb, light_va_layout);
-
-    lightModel = glm::translate(lightModel, lightPos);
+    Mesh light_mesh = primitives::createCube();
+    lightModel      = glm::translate(lightModel, lightPos);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -182,7 +165,7 @@ int main(int argc, char* argv[])
         game.ProcessInput(deltaTime);
         game.Update(deltaTime);
 
-        RenderAPI::clear();
+        renderer.clear();
 
         terrain_shader.setMatrix4("projection", projection);
         terrain_shader.setMatrix4("view", view);
@@ -190,18 +173,13 @@ int main(int argc, char* argv[])
         terrain_shader.setVector4f("lightColor", lightColor);
         terrain_shader.setVector3f("lightPos", lightPos);
         terrain_shader.setVector3f("camPos", camera.position);
-        terrain.draw(terrain_shader);
+        renderer.draw(terrain.getMesh(), terrain_shader);
 
         light_shader.setMatrix4("projection", projection);
         light_shader.setMatrix4("model", lightModel);
         light_shader.setMatrix4("view", camera.getViewMatrix());
         light_shader.setVector4f("lightColor", lightColor);
-
-        light_va.bind();
-        light_vb.bind();
-        light_ib.bind();
-        light_shader.use();
-        GLCALL(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0));
+        renderer.draw(light_mesh, light_shader);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -320,6 +298,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    RenderAPI::updateViewPort(width, height);
+    RenderAPI::setViewport(width, height);
     game.UpdateScreenSize(width, height);
 }

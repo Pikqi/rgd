@@ -41,15 +41,8 @@ void Mesh::uploadToGPU()
     _uploaded = true;
 }
 
-void Mesh::draw(const Shader& shader) const
+void Mesh::bind() const
 {
-    if (!_uploaded)
-    {
-        LOG_WARN("Mesh: Trying to draw before uploading to GPU");
-        return;
-    }
-
-    _vao->bind();
-    shader.use();
-    GLCALL(glDrawElements(GL_TRIANGLES, _indexCount, GL_UNSIGNED_INT, 0));
+    if (_vao)
+        _vao->bind();
 }
