@@ -79,14 +79,14 @@ glm::vec3 TerrainGenerator::calculateNormal(const std::vector<Vertex>& vertices,
     const int x = static_cast<int>(index) % size.x;
     const int z = static_cast<int>(index) / size.x;
 
-    const float hL = (x > 0) ? vertices[index - 1].position.y
-                             : vertices[index].position.y;
-    const float hR =
-        (x < size.x - 1) ? vertices[index + 1].position.y : vertices[index].position.y;
+    const float hL =
+        (x > 0) ? vertices[index - 1].position.y : vertices[index].position.y;
+    const float hR = (x < size.x - 1) ? vertices[index + 1].position.y
+                                      : vertices[index].position.y;
     const float hD = (z > 0) ? vertices[index - size.x].position.y
                              : vertices[index].position.y;
-    const float hU =
-        (z < size.y - 1) ? vertices[index + size.x].position.y : vertices[index].position.y;
+    const float hU = (z < size.y - 1) ? vertices[index + size.x].position.y
+                                      : vertices[index].position.y;
 
     const glm::vec3 tx(2.0f, hR - hL, 0.0f);
     const glm::vec3 tz(0.0f, hU - hD, 2.0f);

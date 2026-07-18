@@ -1,6 +1,7 @@
 #include "camera3d.h"
 #include "game.h"
 #include "post_process_chain.h"
+#include "sky.h"
 #include "terrain.h"
 #include <GLFW/glfw3.h>
 #include "glm/ext/matrix_transform.hpp"
@@ -46,6 +47,8 @@ glm::mat4 view  = glm::mat4(1.0f);
 glm::vec4 lightColor   = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 glm::vec3 lightPos     = glm::vec3(64.0f, 80.0f, 64.0f);
 glm::mat4 lightModel   = glm::mat4(1.0f);
+glm::vec3 sunDir       = glm::normalize(glm::vec3(0.5f, 0.7f, 0.3f));
+glm::vec3 sunColor     = glm::vec3(1.0f, 0.95f, 0.85f);
 glm::vec3 pyramidPos   = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::mat4 pyramidModel = glm::mat4(1.0f);
 glm::vec3 floorPos     = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -143,7 +146,6 @@ int main(int argc, char* argv[])
     Shader light_shader = ResourceManager::LoadShader(
         "shaders/light/vertex.glsl", "shaders/light/fragment.glsl", NULL,
         "light");
-
     tonemap_shader = ResourceManager::LoadShader(
         "shaders/postprocess/quad.vert", "shaders/postprocess/tonemap.frag",
         nullptr, "tonemap");
@@ -153,6 +155,8 @@ int main(int argc, char* argv[])
 
     pipeline.addEffect(&tonemap_shader, "Tonemap");
     pipeline.addEffect(&vignette_shader, "Vignette");
+
+    Sky sky;
 
     Mesh light_mesh = primitives::createCube();
     lightModel      = glm::translate(lightModel, lightPos);
@@ -190,6 +194,11 @@ int main(int argc, char* argv[])
         game.Update(deltaTime);
 
         pipeline.beginScene();
+
+        // --- Sky pass: fullscreen quad into the scene FBO ---
+        // The sky is the first thing drawn so terrain overdraws on top via
+        // depth.
+        sky.draw(camera, projection, sunDir, sunColor);
 
         terrain_shader.setMatrix4("projection", projection);
         terrain_shader.setMatrix4("view", view);
@@ -247,6 +256,24 @@ int main(int argc, char* argv[])
             ImGui::Text("- WASD to move");
             ImGui::Text("- Mouse to look around");
 
+            ImGui::End();
+        }
+
+        {
+            ImGui::Begin("Sky");
+            static float azimuth   = 33.0f;
+            static float elevation = 45.0f;
+            ImGui::SliderFloat("Azimuth", &azimuth, 0.0f, 360.0f);
+            ImGui::SliderFloat("Elevation", &elevation, -10.0f, 90.0f);
+
+            float az = glm::radians(azimuth);
+            float el = glm::radians(elevation);
+            sunDir   = glm::normalize(
+                glm::vec3(cos(el) * cos(az), sin(el), cos(el) * sin(az)));
+
+            ImGui::ColorEdit3("Sun color", &sunColor.x);
+            ImGui::ColorEdit3("Zenith", &sky.zenithColor.x);
+            ImGui::ColorEdit3("Horizon", &sky.horizonColor.x);
             ImGui::End();
         }
 
