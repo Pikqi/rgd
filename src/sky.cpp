@@ -14,7 +14,7 @@ Sky::Sky()
 }
 
 void Sky::draw(const Camera3D& camera, const glm::mat4& projection,
-               const glm::vec3& sunDir, const glm::vec3& sunColor)
+                const glm::vec3& sunDir, const glm::vec3& sunColor)
 {
     glm::mat4 invVP = glm::inverse(projection * camera.getViewMatrix());
 
@@ -24,7 +24,6 @@ void Sky::draw(const Camera3D& camera, const glm::mat4& projection,
 
     _shader.use();
     _shader.setMatrix4("uInvViewProj", invVP);
-    _shader.setVector3f("uCameraPos", camera.position);
     _shader.setVector3f("uZenithColor", zenithColor);
     _shader.setVector3f("uHorizonColor", horizonColor);
     _shader.setVector3f("uSunDir", sunDir);

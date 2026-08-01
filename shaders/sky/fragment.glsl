@@ -5,7 +5,6 @@ in vec2 vNDC;
 out vec4 FragColor;
 
 uniform mat4 uInvViewProj;
-uniform vec3 uCameraPos;
 uniform vec3 uZenithColor;
 uniform vec3 uHorizonColor;
 uniform vec3 uSunDir;

@@ -1,4 +1,5 @@
 #include "camera3d.h"
+#include "clouds.h"
 #include "game.h"
 #include "post_process_chain.h"
 #include "sky.h"
@@ -55,6 +56,7 @@ glm::vec3 floorPos     = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::mat4 floorModel   = glm::mat4(1.0f);
 
 static PostProcessChain* g_pipeline = nullptr;
+static Clouds*           g_clouds   = nullptr;
 Shader                   tonemap_shader;
 Shader                   vignette_shader;
 float                    exposure   = 1.0f;
@@ -158,6 +160,9 @@ int main(int argc, char* argv[])
 
     Sky sky;
 
+    Clouds clouds(SCREEN_WIDTH, SCREEN_HEIGHT);
+    g_clouds = &clouds;
+
     Mesh light_mesh = primitives::createCube();
     lightModel      = glm::translate(lightModel, lightPos);
 
@@ -200,6 +205,9 @@ int main(int argc, char* argv[])
         // depth.
         sky.draw(camera, projection, sunDir, sunColor);
 
+        clouds.draw(camera, projection, sunDir, sunColor, pipeline.scene(),
+                    static_cast<float>(glfwGetTime()));
+
         terrain_shader.setMatrix4("projection", projection);
         terrain_shader.setMatrix4("view", view);
         terrain_shader.setMatrix4("model", model);
@@ -226,96 +234,121 @@ int main(int argc, char* argv[])
         ImGui::NewFrame();
 
         {
-            ImGui::Begin("Terrain Controls");
+            ImGui::Begin("Controls");
+            // ImGui::SetWindowPos({0.0f, 0.0f});
+            ImGui::SetWindowSize({400.0f, static_cast<float>(game.Height)});
 
-            bool paramsChanged = false;
-            paramsChanged |= ImGui::SliderFloat("Octaves", &noiseParams.octaves,
-                                                1.0f, 8.0f, "%.0f");
-            paramsChanged |= ImGui::SliderFloat(
-                "Frequency", &noiseParams.frequency, 0.001f, 0.1f, "%.3f");
-            paramsChanged |= ImGui::SliderFloat(
-                "Amplitude", &noiseParams.amplitude, 1.0f, 100.0f, "%.1f");
-            paramsChanged |= ImGui::SliderFloat(
-                "Persistence", &noiseParams.persistence, 0.1f, 0.9f, "%.2f");
-            paramsChanged |= ImGui::SliderFloat(
-                "Lacunarity", &noiseParams.lacunarity, 1.0f, 4.0f, "%.2f");
-
-            if (paramsChanged || ImGui::Button("Regenerate"))
+            if (ImGui::CollapsingHeader("Terrain",
+                                        ImGuiTreeNodeFlags_DefaultOpen))
             {
-                terrain.regenerate(noiseParams);
+                bool paramsChanged = false;
+                paramsChanged |= ImGui::SliderFloat(
+                    "Octaves", &noiseParams.octaves, 1.0f, 8.0f, "%.0f");
+                paramsChanged |= ImGui::SliderFloat(
+                    "Frequency", &noiseParams.frequency, 0.001f, 0.1f, "%.3f");
+                paramsChanged |= ImGui::SliderFloat(
+                    "Amplitude", &noiseParams.amplitude, 1.0f, 100.0f, "%.1f");
+                paramsChanged |=
+                    ImGui::SliderFloat("Persistence", &noiseParams.persistence,
+                                       0.1f, 0.9f, "%.2f");
+                paramsChanged |= ImGui::SliderFloat(
+                    "Lacunarity", &noiseParams.lacunarity, 1.0f, 4.0f, "%.2f");
+
+                if (paramsChanged || ImGui::Button("Regenerate"))
+                {
+                    terrain.regenerate(noiseParams);
+                }
+
+                ImGui::Separator();
+
+                ImGui::Text("Camera Position:");
+                ImGui::Text("X: %.1f", camera.position.x);
+                ImGui::Text("Y: %.1f", camera.position.y);
+                ImGui::Text("Z: %.1f", camera.position.z);
+
+                ImGui::Text("Controls:");
+                ImGui::Text("- WASD to move");
+                ImGui::Text("- Mouse to look around");
             }
 
-            ImGui::Separator();
-
-            ImGui::Text("Camera Position:");
-            ImGui::Text("X: %.1f", camera.position.x);
-            ImGui::Text("Y: %.1f", camera.position.y);
-            ImGui::Text("Z: %.1f", camera.position.z);
-
-            ImGui::Text("Controls:");
-            ImGui::Text("- WASD to move");
-            ImGui::Text("- Mouse to look around");
-
-            ImGui::End();
-        }
-
-        {
-            ImGui::Begin("Sky");
-            static float azimuth   = 33.0f;
-            static float elevation = 45.0f;
-            ImGui::SliderFloat("Azimuth", &azimuth, 0.0f, 360.0f);
-            ImGui::SliderFloat("Elevation", &elevation, -10.0f, 90.0f);
-
-            float az = glm::radians(azimuth);
-            float el = glm::radians(elevation);
-            sunDir   = glm::normalize(
-                glm::vec3(cos(el) * cos(az), sin(el), cos(el) * sin(az)));
-
-            ImGui::ColorEdit3("Sun color", &sunColor.x);
-            ImGui::ColorEdit3("Zenith", &sky.zenithColor.x);
-            ImGui::ColorEdit3("Horizon", &sky.horizonColor.x);
-            ImGui::End();
-        }
-
-        {
-            ImGui::Begin("Hello, world!");
-            ImGui::SetWindowPos(
-                {static_cast<float>(game.Width) - 400.0f, 0.0f});
-            ImGui::SetWindowSize({400.0f, static_cast<float>(game.Height)});
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                        1000.0f / io.Framerate, io.Framerate);
-
-            ImGui::Value("Mouse X", game.mouse_pos.x);
-            ImGui::SameLine();
-            ImGui::Value("Mouse Y", game.mouse_pos.y);
-            ImGui::End();
-        }
-
-        {
-            ImGui::Begin("Post FX");
-            ImGui::SliderFloat("Exposure", &exposure, 0.0f, 3.0f);
-            ImGui::Checkbox("Gamma correct", &applyGamma);
-            ImGui::SliderFloat("Vignette intensity", &vignetteAmount, 0.0f,
-                               1.0f);
-            ImGui::SliderFloat("Vignette radius", &vignetteRadius, 0.1f, 1.5f);
-            ImGui::SliderFloat("Vignette softness", &vignetteSoft, 0.0f, 1.0f);
-            ImGui::End();
-        }
-
-        {
-            ImGui::Begin("Pipeline Debug");
-            ImGui::Text("Scene");
-            ImGui::Image((ImTextureID)(intptr_t)pipeline.scene().colorTex(),
-                         ImVec2(256, 144), ImVec2(0.0f, 1.0f),
-                         ImVec2(1.0f, 0.0f));
-            for (const auto& e : pipeline.effects())
+            if (ImGui::CollapsingHeader("Sky"))
             {
-                ImGui::Separator();
-                ImGui::Text("%s", e->name());
-                ImGui::Image((ImTextureID)(intptr_t)e->outputTex(),
+                static float azimuth   = 33.0f;
+                static float elevation = 45.0f;
+                ImGui::SliderFloat("Azimuth", &azimuth, 0.0f, 360.0f);
+                ImGui::SliderFloat("Elevation", &elevation, -10.0f, 90.0f);
+
+                float az = glm::radians(azimuth);
+                float el = glm::radians(elevation);
+                sunDir   = glm::normalize(
+                    glm::vec3(cos(el) * cos(az), sin(el), cos(el) * sin(az)));
+
+                ImGui::ColorEdit3("Sun color", &sunColor.x);
+                ImGui::ColorEdit3("Zenith", &sky.zenithColor.x);
+                ImGui::ColorEdit3("Horizon", &sky.horizonColor.x);
+            }
+
+            if (ImGui::CollapsingHeader("Clouds"))
+            {
+                ImGui::SliderFloat("Layer height", &clouds.layerStart, 10.0f,
+                                   1000.0f, "%.1f");
+                ImGui::SliderFloat("Cloud thickness", &clouds.layerHeight, 5.0f,
+                                   50.0f, "%.1f");
+                ImGui::SliderFloat("Coverage", &clouds.coverage, 0.0f, 1.0f,
+                                   "%.2f");
+                ImGui::SliderFloat("Wind speed", &clouds.windSpeed, 0.0f, 5.0f,
+                                   "%.2f");
+                ImGui::SliderInt("Primary steps", &clouds.stepCount, 16, 256);
+                ImGui::TextWrapped(
+                    "Sun color / direction are controlled from the Sky panel.");
+            }
+
+            if (ImGui::CollapsingHeader("Stats"))
+            {
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+                            1000.0f / io.Framerate, io.Framerate);
+
+                ImGui::Value("Mouse X", game.mouse_pos.x);
+                ImGui::SameLine();
+                ImGui::Value("Mouse Y", game.mouse_pos.y);
+            }
+
+            if (ImGui::CollapsingHeader("Post FX"))
+            {
+                ImGui::SliderFloat("Exposure", &exposure, 0.0f, 3.0f);
+                ImGui::Checkbox("Gamma correct", &applyGamma);
+                ImGui::SliderFloat("Vignette intensity", &vignetteAmount, 0.0f,
+                                   1.0f);
+                ImGui::SliderFloat("Vignette radius", &vignetteRadius, 0.1f,
+                                   1.5f);
+                ImGui::SliderFloat("Vignette softness", &vignetteSoft, 0.0f,
+                                   1.0f);
+            }
+
+            if (ImGui::CollapsingHeader("Pipeline Debug"))
+            {
+                ImGui::Text("Scene");
+                ImGui::Image((ImTextureID)(intptr_t)pipeline.scene().colorTex(),
                              ImVec2(256, 144), ImVec2(0.0f, 1.0f),
                              ImVec2(1.0f, 0.0f));
+                for (const auto& e : pipeline.effects())
+                {
+                    ImGui::Separator();
+                    ImGui::Text("%s", e->name());
+                    ImGui::Image((ImTextureID)(intptr_t)e->outputTex(),
+                                 ImVec2(256, 144), ImVec2(0.0f, 1.0f),
+                                 ImVec2(1.0f, 0.0f));
+                }
             }
+
+            if (ImGui::CollapsingHeader("Camera"))
+            {
+                ImGui::Text("World position");
+                ImGui::Text("X: %.3f", camera.position.x);
+                ImGui::Text("Y: %.3f", camera.position.y);
+                ImGui::Text("Z: %.3f", camera.position.z);
+            }
+
             ImGui::End();
         }
 
@@ -387,5 +420,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     RenderAPI::setViewport(width, height);
     if (g_pipeline)
         g_pipeline->resize(width, height);
+    if (g_clouds)
+        g_clouds->resize(width, height);
     game.UpdateScreenSize(width, height);
 }
