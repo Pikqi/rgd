@@ -1,4 +1,5 @@
 #include "glm/ext/matrix_transform.hpp"
+#include <algorithm>
 #include <camera3d.h>
 
 Camera3D::Camera3D(glm::vec3 position)
@@ -37,6 +38,7 @@ void Camera3D::mouseMoveCamera(float xoffset, float yoffset)
 
     yaw += xoffset;
     pitch += yoffset;
+    pitch = std::clamp(pitch, -90.0f, 90.0f);
 
     _updateCameraVectors();
 }

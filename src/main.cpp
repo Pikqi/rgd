@@ -265,6 +265,8 @@ int main(int argc, char* argv[])
                 ImGui::Text("X: %.1f", camera.position.x);
                 ImGui::Text("Y: %.1f", camera.position.y);
                 ImGui::Text("Z: %.1f", camera.position.z);
+                ImGui::Text("YAW: %.1f", camera.yaw);
+                ImGui::Text("PITCH: %.1f", camera.pitch);
 
                 ImGui::Text("Controls:");
                 ImGui::Text("- WASD to move");
