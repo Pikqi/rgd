@@ -33,12 +33,12 @@ const unsigned int SCREEN_WIDTH  = 1720;
 const unsigned int SCREEN_HEIGHT = 890;
 
 Game     game(SCREEN_WIDTH, SCREEN_HEIGHT);
-Camera3D camera(glm::vec3(64.0f, 50.0f, 64.0f));
+Camera3D camera(glm::vec3(64.0f, 15.0f, 64.0f));
 
 bool show_demo_window   = false;
 bool mouse_look_enabled = true;
 
-const int   TERRAIN_SIZE = 128;
+const int   TERRAIN_SIZE = 512;
 NoiseParams noiseParams;
 
 glm::mat4 projection;
@@ -293,9 +293,9 @@ int main(int argc, char* argv[])
             if (ImGui::CollapsingHeader("Clouds"))
             {
                 ImGui::SliderFloat("Layer height", &clouds.layerStart, 10.0f,
-                                   1000.0f, "%.1f");
-                ImGui::SliderFloat("Cloud thickness", &clouds.layerHeight, 5.0f,
-                                   50.0f, "%.1f");
+                                   60.0f, "%.1f");
+                ImGui::SliderFloat("Cloud thickness", &clouds.layerHeight, 2.0f,
+                                   30.0f, "%.1f");
                 ImGui::SliderFloat("Coverage", &clouds.coverage, 0.0f, 1.0f,
                                    "%.2f");
                 ImGui::SliderFloat("Wind speed", &clouds.windSpeed, 0.0f, 5.0f,
