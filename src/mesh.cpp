@@ -16,7 +16,8 @@ void Mesh::setVertices(const std::vector<Vertex>& vertices)
 void Mesh::setIndices(const std::vector<unsigned int>& indices)
 {
     _indexCount = indices.size();
-    _ibo        = std::make_unique<IndexBuffer>(indices.data(), indices.size());
+    GLCALL(glBindVertexArray(0));
+    _ibo = std::make_unique<IndexBuffer>(indices.data(), indices.size());
 }
 
 void Mesh::uploadToGPU()
@@ -39,6 +40,8 @@ void Mesh::uploadToGPU()
     _vao->add_buffer(*_vbo, layout);
 
     _uploaded = true;
+
+    _vao->unbind();
 }
 
 void Mesh::bind() const
