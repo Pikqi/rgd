@@ -29,7 +29,6 @@ void Water::draw(const Camera3D& camera, const glm::mat4& projection,
                  const glm::vec3& sunDir, const glm::vec3& sunColor,
                  const Framebuffer& sceneFbo, float time)
 {
-    // --- Snapshot the scene (color + depth) so water can sample it safely ---
     // Sampling sceneFbo's own attachments while rendering into it is undefined
     // behavior, so we blit into _sceneSnapshot first.
     GLCALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, sceneFbo.getId()));
@@ -39,7 +38,6 @@ void Water::draw(const Camera3D& camera, const glm::mat4& projection,
         static_cast<GLsizei>(_viewW), static_cast<GLsizei>(_viewH),
         GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
 
-    // --- Re-bind the scene FBO as draw target for the water pass ---
     GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo.getId()));
     GLCALL(glViewport(0, 0, static_cast<GLsizei>(_viewW),
                       static_cast<GLsizei>(_viewH)));
@@ -52,7 +50,6 @@ void Water::draw(const Camera3D& camera, const glm::mat4& projection,
     GLCALL(glDepthMask(GL_TRUE));
     GLCALL(glDisable(GL_BLEND));
 
-    // --- Bind snapshot textures to sampler units (1 = color, 2 = depth) ---
     GLCALL(glActiveTexture(GL_TEXTURE1));
     GLCALL(glBindTexture(GL_TEXTURE_2D, _sceneSnapshot.colorTex()));
     GLCALL(glActiveTexture(GL_TEXTURE2));
@@ -82,7 +79,6 @@ void Water::draw(const Camera3D& camera, const glm::mat4& projection,
                           static_cast<GLsizei>(_mesh.getIndexCount()),
                           GL_UNSIGNED_INT, nullptr));
 
-    // --- Unbind sampler textures to avoid leaking state ---
     GLCALL(glActiveTexture(GL_TEXTURE1));
     GLCALL(glBindTexture(GL_TEXTURE_2D, 0));
     GLCALL(glActiveTexture(GL_TEXTURE2));

@@ -19,7 +19,6 @@ class Clouds
               const glm::vec3& sunDir, const glm::vec3& sunColor,
               const Framebuffer& sceneFbo, float time);
 
-    // --- tunable parameters (driven from ImGui) ---
     // Height of the cloud layer base above the camera/ground, and the
     // thickness of the cloud layer. The actual layer end used by the
     // shader is derived as layerStart + layerHeight.

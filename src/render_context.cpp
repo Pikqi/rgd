@@ -15,7 +15,6 @@ RenderContext::RenderContext(GLFWwindow* window) : _window_handle(window)
 int RenderContext::init()
 {
     // glad: load all OpenGL function pointers
-    // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         LOG_FATAL("Failed to initialize GLAD");

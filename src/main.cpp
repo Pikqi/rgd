@@ -120,7 +120,6 @@ int main(int argc, char* argv[])
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(main_scale);
     style.FontScaleDpi = main_scale;
-    style.ScaleAllSizes(2);
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -209,7 +208,6 @@ int main(int argc, char* argv[])
 
         pipeline.beginScene();
 
-        // --- Sky pass: fullscreen quad into the scene FBO ---
         // The sky is the first thing drawn so terrain overdraws on top via
         // depth.
         sky.draw(camera, projection, sunDir, sunColor);

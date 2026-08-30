@@ -83,21 +83,18 @@ Mesh createFullscreenQuad()
 
     glm::vec3 normal = glm::vec3(0.0f, 0.0f, 1.0f);
 
-    // Two triangles, 6 vertices, no shared vertices.
-    // Triangle 1: BL, BR, TR  (bottom-right half)
     vertices.push_back(
-        {glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f), normal}); // 0
+        {glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f), normal});
     vertices.push_back(
-        {glm::vec3(1.0f, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f), normal}); // 1
+        {glm::vec3(1.0f, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f), normal});
     vertices.push_back(
-        {glm::vec3(1.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f), normal}); // 2
-    // Triangle 2: BL, TR, TL  (top-left half)
+        {glm::vec3(1.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f), normal});
     vertices.push_back(
-        {glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f), normal}); // 3
+        {glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f), normal});
     vertices.push_back(
-        {glm::vec3(1.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f), normal}); // 4
+        {glm::vec3(1.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f), normal});
     vertices.push_back(
-        {glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f), normal}); // 5
+        {glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f), normal});
 
     indices.push_back(0);
     indices.push_back(1);
@@ -122,13 +119,10 @@ Mesh createPlaneXZ(float size)
     const glm::vec3 normal(0.0f, 1.0f, 0.0f);
 
     vertices.push_back(
-        {glm::vec3(-h, 0.0f, -h), glm::vec2(0.0f, 0.0f), normal}); // 0 BL
-    vertices.push_back(
-        {glm::vec3(h, 0.0f, -h), glm::vec2(1.0f, 0.0f), normal}); // 1 BR
-    vertices.push_back(
-        {glm::vec3(h, 0.0f, h), glm::vec2(1.0f, 1.0f), normal}); // 2 TR
-    vertices.push_back(
-        {glm::vec3(-h, 0.0f, h), glm::vec2(0.0f, 1.0f), normal}); // 3 TL
+        {glm::vec3(-h, 0.0f, -h), glm::vec2(0.0f, 0.0f), normal});
+    vertices.push_back({glm::vec3(h, 0.0f, -h), glm::vec2(1.0f, 0.0f), normal});
+    vertices.push_back({glm::vec3(h, 0.0f, h), glm::vec2(1.0f, 1.0f), normal});
+    vertices.push_back({glm::vec3(-h, 0.0f, h), glm::vec2(0.0f, 1.0f), normal});
 
     indices.push_back(0);
     indices.push_back(1);

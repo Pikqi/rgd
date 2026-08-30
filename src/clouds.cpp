@@ -59,7 +59,6 @@ void Clouds::draw(const Camera3D& camera, const glm::mat4& projection,
     _quad.bind();
     GLCALL(glDrawArrays(GL_TRIANGLES, 0, _quad.getVertexCount()));
 
-    // --- Pass 2: composite clouds over the scene FBO (premultiplied over) ---
     GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo.getId()));
     GLCALL(glViewport(0, 0, static_cast<GLsizei>(sceneFbo.width()),
                       static_cast<GLsizei>(sceneFbo.height())));
