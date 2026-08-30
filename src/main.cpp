@@ -4,6 +4,7 @@
 #include "post_process_chain.h"
 #include "sky.h"
 #include "terrain.h"
+#include "water.h"
 #include <GLFW/glfw3.h>
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float3.hpp"
@@ -57,6 +58,7 @@ glm::mat4 floorModel   = glm::mat4(1.0f);
 
 static PostProcessChain* g_pipeline = nullptr;
 static Clouds*           g_clouds   = nullptr;
+static Water*            g_water    = nullptr;
 Shader                   tonemap_shader;
 Shader                   vignette_shader;
 float                    exposure   = 1.0f;
@@ -65,6 +67,10 @@ bool                     applyGamma = true;
 float vignetteAmount = 0.335f;
 float vignetteRadius = 1.01;
 float vignetteSoft   = 0.4f;
+
+bool drawClouds  = true;
+bool drawWater   = true;
+bool drawTerrain = true;
 
 int main(int argc, char* argv[])
 {
@@ -163,6 +169,9 @@ int main(int argc, char* argv[])
     Clouds clouds(SCREEN_WIDTH, SCREEN_HEIGHT);
     g_clouds = &clouds;
 
+    Water water(SCREEN_WIDTH, SCREEN_HEIGHT);
+    g_water = &water;
+
     Mesh light_mesh = primitives::createCube();
     lightModel      = glm::translate(lightModel, lightPos);
 
@@ -205,8 +214,11 @@ int main(int argc, char* argv[])
         // depth.
         sky.draw(camera, projection, sunDir, sunColor);
 
-        clouds.draw(camera, projection, sunDir, sunColor, pipeline.scene(),
-                    static_cast<float>(glfwGetTime()));
+        if (drawClouds)
+        {
+            clouds.draw(camera, projection, sunDir, sunColor, pipeline.scene(),
+                        static_cast<float>(glfwGetTime()));
+        }
 
         terrain_shader.setMatrix4("projection", projection);
         terrain_shader.setMatrix4("view", view);
@@ -221,6 +233,12 @@ int main(int argc, char* argv[])
         light_shader.setMatrix4("view", camera.getViewMatrix());
         light_shader.setVector4f("lightColor", lightColor);
         renderer.draw(light_mesh, light_shader);
+
+        if (drawWater)
+        {
+            water.draw(camera, projection, sunDir, sunColor, pipeline.scene(),
+                       static_cast<float>(glfwGetTime()));
+        }
 
         tonemap_shader.setFloat("uExposure", exposure);
         tonemap_shader.setInteger("uApplyGamma", applyGamma);
@@ -237,6 +255,10 @@ int main(int argc, char* argv[])
             ImGui::Begin("Controls");
             // ImGui::SetWindowPos({0.0f, 0.0f});
             ImGui::SetWindowSize({400.0f, static_cast<float>(game.Height)});
+
+            ImGui::Checkbox("Draw clouds (1)", &drawClouds);
+            ImGui::Checkbox("Draw water (2)", &drawWater);
+            ImGui::Checkbox("Draw terrain (3)", &drawTerrain);
 
             if (ImGui::CollapsingHeader("Terrain",
                                         ImGuiTreeNodeFlags_DefaultOpen))
@@ -288,6 +310,26 @@ int main(int argc, char* argv[])
                 ImGui::ColorEdit3("Sun color", &sunColor.x);
                 ImGui::ColorEdit3("Zenith", &sky.zenithColor.x);
                 ImGui::ColorEdit3("Horizon", &sky.horizonColor.x);
+            }
+
+            if (ImGui::CollapsingHeader("Water"))
+            {
+                ImGui::SliderFloat("Sea level", &water.seaLevel, -30.0f, 30.0f,
+                                   "%.1f");
+                ImGui::SliderFloat("Wave amplitude", &water.waveAmplitude, 0.0f,
+                                   2.0f, "%.2f");
+                ImGui::SliderFloat("Shininess", &water.shininess, 8.0f, 512.0f,
+                                   "%.0f");
+                ImGui::ColorEdit3("Water color", &water.waterColor.x);
+                ImGui::ColorEdit3("Horizon tint", &water.horizonColor.x);
+                ImGui::Separator();
+                ImGui::SliderFloat("Distortion strength",
+                                   &water.distortionStrength, 0.0f, 0.1f,
+                                   "%.3f");
+                ImGui::SliderFloat("Depth darkness", &water.depthDarkness, 0.0f,
+                                   1.0f, "%.2f");
+                ImGui::SliderFloat("Max water depth", &water.maxWaterDepth,
+                                   1.0f, 100.0f, "%.1f");
             }
 
             if (ImGui::CollapsingHeader("Clouds"))
@@ -378,6 +420,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
         show_demo_window = !show_demo_window;
     if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
         game.debug_mode = !game.debug_mode;
+
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+        drawClouds = !drawClouds;
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+        drawWater = !drawWater;
+    if (key == GLFW_KEY_3 && action == GLFW_PRESS)
+        drawTerrain = !drawTerrain;
     if (key >= 0 && key < 1024)
     {
         if (action == GLFW_PRESS)
@@ -424,5 +473,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
         g_pipeline->resize(width, height);
     if (g_clouds)
         g_clouds->resize(width, height);
+    if (g_water)
+        g_water->resize(width, height);
     game.UpdateScreenSize(width, height);
 }

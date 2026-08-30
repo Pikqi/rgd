@@ -20,6 +20,10 @@ class Framebuffer
     {
         return _colorTex;
     }
+    unsigned int depthTex() const
+    {
+        return _depthTex;
+    }
     unsigned int getId() const
     {
         return _fbo;
@@ -39,7 +43,7 @@ class Framebuffer
 
     GLuint       _fbo       = 0;
     GLuint       _colorTex  = 0;
-    GLuint       _depthRb   = 0;
+    GLuint       _depthTex  = 0;
     unsigned int _w         = 0;
     unsigned int _h         = 0;
     bool         _withDepth = true;

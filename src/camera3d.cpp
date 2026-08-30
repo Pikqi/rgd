@@ -38,7 +38,7 @@ void Camera3D::mouseMoveCamera(float xoffset, float yoffset)
 
     yaw += xoffset;
     pitch += yoffset;
-    pitch = std::clamp(pitch, -90.0f, 90.0f);
+    pitch = std::clamp(pitch, -89.0f, 89.0f);
 
     _updateCameraVectors();
 }

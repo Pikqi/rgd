@@ -14,7 +14,7 @@ Sky::Sky()
 }
 
 void Sky::draw(const Camera3D& camera, const glm::mat4& projection,
-                const glm::vec3& sunDir, const glm::vec3& sunColor)
+               const glm::vec3& sunDir, const glm::vec3& sunColor)
 {
     glm::mat4 invVP = glm::inverse(projection * camera.getViewMatrix());
 

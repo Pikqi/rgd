@@ -113,4 +113,35 @@ Mesh createFullscreenQuad()
     return mesh;
 }
 
+Mesh createPlaneXZ(float size)
+{
+    std::vector<Vertex>       vertices;
+    std::vector<unsigned int> indices;
+
+    const float     h = 0.5f * size;
+    const glm::vec3 normal(0.0f, 1.0f, 0.0f);
+
+    vertices.push_back(
+        {glm::vec3(-h, 0.0f, -h), glm::vec2(0.0f, 0.0f), normal}); // 0 BL
+    vertices.push_back(
+        {glm::vec3(h, 0.0f, -h), glm::vec2(1.0f, 0.0f), normal}); // 1 BR
+    vertices.push_back(
+        {glm::vec3(h, 0.0f, h), glm::vec2(1.0f, 1.0f), normal}); // 2 TR
+    vertices.push_back(
+        {glm::vec3(-h, 0.0f, h), glm::vec2(0.0f, 1.0f), normal}); // 3 TL
+
+    indices.push_back(0);
+    indices.push_back(1);
+    indices.push_back(2);
+    indices.push_back(0);
+    indices.push_back(2);
+    indices.push_back(3);
+
+    Mesh mesh;
+    mesh.setVertices(vertices);
+    mesh.setIndices(indices);
+    mesh.uploadToGPU();
+    return mesh;
+}
+
 } // namespace primitives

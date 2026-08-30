@@ -32,13 +32,21 @@ void Framebuffer::create()
 
     if (_withDepth)
     {
-        GLCALL(glGenRenderbuffers(1, &_depthRb));
-        GLCALL(glBindRenderbuffer(GL_RENDERBUFFER, _depthRb));
-        GLCALL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
-                                     static_cast<GLsizei>(_w),
-                                     static_cast<GLsizei>(_h)));
-        GLCALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                         GL_RENDERBUFFER, _depthRb));
+        GLCALL(glGenTextures(1, &_depthTex));
+        GLCALL(glBindTexture(GL_TEXTURE_2D, _depthTex));
+        GLCALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24,
+                            static_cast<GLsizei>(_w), static_cast<GLsizei>(_h),
+                            0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
+        GLCALL(
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GLCALL(
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                               GL_CLAMP_TO_EDGE));
+        GLCALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                               GL_CLAMP_TO_EDGE));
+        GLCALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                      GL_TEXTURE_2D, _depthTex, 0));
     }
 
     const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -49,10 +57,6 @@ void Framebuffer::create()
 
     GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     GLCALL(glBindTexture(GL_TEXTURE_2D, 0));
-    if (_withDepth)
-    {
-        GLCALL(glBindRenderbuffer(GL_RENDERBUFFER, 0));
-    }
 }
 
 void Framebuffer::destroy()
@@ -67,10 +71,10 @@ void Framebuffer::destroy()
         GLCALL(glDeleteTextures(1, &_colorTex));
         _colorTex = 0;
     }
-    if (_depthRb)
+    if (_depthTex)
     {
-        GLCALL(glDeleteRenderbuffers(1, &_depthRb));
-        _depthRb = 0;
+        GLCALL(glDeleteTextures(1, &_depthTex));
+        _depthTex = 0;
     }
 }
 
