@@ -56,8 +56,7 @@ static Clouds*           g_clouds   = nullptr;
 static Water*            g_water    = nullptr;
 Shader                   tonemap_shader;
 Shader                   vignette_shader;
-float                    exposure   = 1.0f;
-bool                     applyGamma = true;
+float                    exposure = 1.0f;
 
 float vignetteAmount = 0.335f;
 float vignetteRadius = 1.01;
@@ -222,7 +221,6 @@ int main(int argc, char* argv[])
         }
 
         tonemap_shader.setFloat("uExposure", exposure);
-        tonemap_shader.setInteger("uApplyGamma", applyGamma);
         vignette_shader.setFloat("uIntensity", vignetteAmount);
         vignette_shader.setFloat("uRadius", vignetteRadius);
         vignette_shader.setFloat("uSoftness", vignetteSoft);
@@ -235,7 +233,7 @@ int main(int argc, char* argv[])
         {
             ImGui::Begin("Controls");
             // ImGui::SetWindowPos({0.0f, 0.0f});
-            ImGui::SetWindowSize({400.0f, static_cast<float>(game.Height)});
+            // ImGui::SetWindowSize({400.0f, static_cast<float>(game.Height)});
 
             ImGui::Checkbox("Draw clouds (1)", &drawClouds);
             ImGui::Checkbox("Draw water (2)", &drawWater);
@@ -341,7 +339,6 @@ int main(int argc, char* argv[])
             if (ImGui::CollapsingHeader("Post FX"))
             {
                 ImGui::SliderFloat("Exposure", &exposure, 0.0f, 3.0f);
-                ImGui::Checkbox("Gamma correct", &applyGamma);
                 ImGui::SliderFloat("Vignette intensity", &vignetteAmount, 0.0f,
                                    1.0f);
                 ImGui::SliderFloat("Vignette radius", &vignetteRadius, 0.1f,

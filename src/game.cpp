@@ -29,15 +29,4 @@ void Game::Update(float dt) {}
 
 void Game::ProcessInput(float dt) {}
 
-void Game::Render()
-{
-
-    if (debug_mode)
-    {
-        debugFlush();
-    }
-    else
-    {
-        debugClear();
-    }
-}
+void Game::Render() {}
