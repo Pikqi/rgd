@@ -13,19 +13,20 @@ uniform vec3 camPos;
 
 void main()
 {
-  float ambientStrenght = 0.3;
-  vec4 ambient = ambientStrenght * lightColor;
+  float ambientStrength = 0.3;
+  vec3 ambient = ambientStrength * lightColor.rgb;
 
   vec3 norm = normalize(normal);
   vec3 lightDir = normalize(lightPos - fragPos);
   float diff = max(dot(norm, lightDir), 0.0);
-  vec4 diffuse = diff * lightColor;
+  vec3 diffuse = diff * lightColor.rgb;
 
   float specularStrength = 0.5;
   vec3 viewDir = normalize(camPos - fragPos);
   vec3 lightReflect = reflect(-lightDir, norm);
   float spec = pow(max(dot(lightReflect, viewDir), 0.0), 32.0);
-  vec4 specular = specularStrength * spec * lightColor;
+  vec3 specular = specularStrength * spec * lightColor.rgb;
 
-  FragColor = vec4(color, 1.0f) * (ambient + diffuse + specular);
+  vec3 result = color * (ambient + diffuse + specular);
+  FragColor = vec4(result, 1.0);
 }

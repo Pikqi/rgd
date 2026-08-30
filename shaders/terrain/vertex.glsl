@@ -20,4 +20,8 @@ void main()
   texCoord = aTex;
   normal = aNormal;
   color = vec3(0.5f, 0.7f, 0.3f);
+  if (aPos.y > 10) {
+    color = vec3(0.8f, 0.8f, 0.8f);
+  }
 }
+

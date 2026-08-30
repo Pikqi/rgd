@@ -6,9 +6,7 @@
 #include "terrain.h"
 #include "water.h"
 #include <GLFW/glfw3.h>
-#include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float3.hpp"
-#include "primitives.h"
 #include "render_api.h"
 #include "render_context.h"
 #include "renderer.h"
@@ -48,15 +46,10 @@ glm::mat4 projection;
 glm::mat4 model = glm::mat4(1.0f);
 glm::mat4 view  = glm::mat4(1.0f);
 
-glm::vec4 lightColor   = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-glm::vec3 lightPos     = glm::vec3(64.0f, 80.0f, 64.0f);
-glm::mat4 lightModel   = glm::mat4(1.0f);
-glm::vec3 sunDir       = glm::normalize(glm::vec3(0.5f, 0.7f, 0.3f));
-glm::vec3 sunColor     = glm::vec3(1.0f, 0.95f, 0.85f);
-glm::vec3 pyramidPos   = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::mat4 pyramidModel = glm::mat4(1.0f);
-glm::vec3 floorPos     = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::mat4 floorModel   = glm::mat4(1.0f);
+glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+glm::vec3 lightPos   = glm::vec3(64.0f, 80.0f, 64.0f);
+glm::vec3 sunDir     = glm::normalize(glm::vec3(0.5f, 0.7f, 0.3f));
+glm::vec3 sunColor   = glm::vec3(1.0f, 0.95f, 0.85f);
 
 static PostProcessChain* g_pipeline = nullptr;
 static Clouds*           g_clouds   = nullptr;
@@ -136,12 +129,6 @@ int main(int argc, char* argv[])
         "shaders/terrain/vertex.glsl", "shaders/terrain/fragment.glsl", NULL,
         "terrain");
 
-    Terrain terrain({TERRAIN_SIZE, TERRAIN_SIZE}, noiseParams);
-
-    auto brick_texture =
-        ResourceManager::LoadTexture("res/brick.png", true, "brick");
-    brick_texture->setRepeat(true);
-
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
@@ -174,9 +161,7 @@ int main(int argc, char* argv[])
     Water water(SCREEN_WIDTH, SCREEN_HEIGHT);
     g_water = &water;
 
-    Mesh light_mesh = primitives::createCube();
-    lightModel      = glm::translate(lightModel, lightPos);
-
+    Terrain terrain({TERRAIN_SIZE, TERRAIN_SIZE}, noiseParams);
     while (!glfwWindowShouldClose(window))
     {
         int width  = 0;
@@ -227,13 +212,8 @@ int main(int argc, char* argv[])
         terrain_shader.setVector4f("lightColor", lightColor);
         terrain_shader.setVector3f("lightPos", lightPos);
         terrain_shader.setVector3f("camPos", camera.position);
-        renderer.draw(terrain.getMesh(), terrain_shader);
-
-        light_shader.setMatrix4("projection", projection);
-        light_shader.setMatrix4("model", lightModel);
-        light_shader.setMatrix4("view", camera.getViewMatrix());
-        light_shader.setVector4f("lightColor", lightColor);
-        renderer.draw(light_mesh, light_shader);
+        if (drawTerrain)
+            renderer.draw(terrain.getMesh(), terrain_shader);
 
         if (drawWater)
         {

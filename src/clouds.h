@@ -22,7 +22,7 @@ class Clouds
     // Height of the cloud layer base above the camera/ground, and the
     // thickness of the cloud layer. The actual layer end used by the
     // shader is derived as layerStart + layerHeight.
-    float layerStart  = 15.0f;
+    float layerStart  = 25.0f;
     float layerHeight = 5.0f;
     float coverage    = 0.45f;
     float windSpeed   = 1.0f;
