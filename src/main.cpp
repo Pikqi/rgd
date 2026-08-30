@@ -15,6 +15,7 @@
 #include "resource_manager.h"
 #include "shader.h"
 #include <cstdint>
+#include <algorithm>
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_glfw.h>
@@ -29,6 +30,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action,
 void key_callback(GLFWwindow* window, int key, int scancode, int action,
                   int mode);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 const unsigned int SCREEN_WIDTH  = 1720;
 const unsigned int SCREEN_HEIGHT = 890;
@@ -99,6 +101,7 @@ int main(int argc, char* argv[])
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     RenderAPI::init(SCREEN_WIDTH, SCREEN_HEIGHT);
     RenderAPI::setClearColor(0.05f, 0.05f, 0.08f, 1.0f);
@@ -474,4 +477,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     if (g_water)
         g_water->resize(width, height);
     game.UpdateScreenSize(width, height);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.move_speed += yoffset * 2.0f;
+    camera.move_speed = std::clamp(camera.move_speed, 1.0f, 200.0f);
 }
