@@ -10,6 +10,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Gather all .cpp and .c files in src/
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
 
+add_subdirectory(include/spdlog)
+
 set(THIRD_PARTY_SOURCES "include/glad/glad.c")
 
 file(GLOB IMGUI_SOURCES
@@ -34,8 +36,7 @@ pkg_search_module(GLFW REQUIRED glfw3)
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${GLFW_LIBRARIES})
 
-find_package(spdlog REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 
 # --- Run step --- 
 add_custom_target(run

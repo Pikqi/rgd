@@ -17,7 +17,6 @@ This project is using CMake and gcc, the runtime dependencies are:
 
 - glfw3 for windowing
 - OpenGL 3 +
-- spd_log for logging
 
 There is also a shell.nix file, if you are on a system with nix installed you can run nix-shell . in to get put into a shell with all build and runtime deps on a linux host.
 
@@ -27,6 +26,7 @@ There are some staticly included libraries such as:
 - ImGui - for immediate mode ui
 - glm - gl maths
 - stb_perlin - perlin noise implementation
+- spdlog - for logging
 
 To configure and build the project:
 
