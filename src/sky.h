@@ -17,6 +17,6 @@ class Sky
     glm::vec3 horizonColor = glm::vec3(0.70f, 0.80f, 0.90f);
 
   private:
-    Shader _shader;
-    Mesh   _quad;
+    Shader& _shader;
+    Mesh    _quad;
 };

@@ -9,14 +9,19 @@
 
 Clouds::Clouds(unsigned int viewportW, unsigned int viewportH)
     : _fbo(std::max(1u, viewportW / 2), std::max(1u, viewportH / 2), false),
-      _viewW(viewportW), _viewH(viewportH)
-{
-    _marchShader = ResourceManager::LoadShader("shaders/clouds/vertex.glsl",
+      _viewW(viewportW), _viewH(viewportH),
+
+      _marchShader(ResourceManager::LoadShader("shaders/clouds/vertex.glsl",
                                                "shaders/clouds/fragment.glsl",
-                                               nullptr, "clouds_march");
-    _compositeShader = ResourceManager::LoadShader(
-        "shaders/clouds/vertex.glsl", "shaders/clouds/composite.frag", nullptr,
-        "clouds_composite");
+                                               "clouds_march")),
+
+      _compositeShader(ResourceManager::LoadShader(
+          "shaders/clouds/vertex.glsl", "shaders/clouds/composite.frag",
+          "clouds_composite")
+
+      )
+
+{
     _quad = primitives::createFullscreenQuad();
 }
 

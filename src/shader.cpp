@@ -7,46 +7,35 @@ void Shader::use() const
     GLCALL(glUseProgram(this->_id));
 }
 
-void Shader::compile(const char* vertexSource, const char* fragmentSource,
-                     const char* geometrySource)
+void Shader::compile(const char* vertexSource, const char* fragmentSource)
 {
     unsigned int sVertex, sFragment, gShader;
     // vertex Shader
     GLCALL(sVertex = glCreateShader(GL_VERTEX_SHADER));
     GLCALL(glShaderSource(sVertex, 1, &vertexSource, NULL));
     GLCALL(glCompileShader(sVertex));
-    checkCompileErrors(sVertex, "VERTEX");
+    _error = checkCompileErrors(sVertex, "VERTEX");
     // fragment Shader
     sFragment = glCreateShader(GL_FRAGMENT_SHADER);
     GLCALL(glShaderSource(sFragment, 1, &fragmentSource, NULL));
     GLCALL(glCompileShader(sFragment));
-    checkCompileErrors(sFragment, "FRAGMENT");
-    // if geometry shader source code is given, also compile geometry shader
-    if (geometrySource != nullptr)
-    {
-        gShader = glCreateShader(GL_GEOMETRY_SHADER);
-        GLCALL(glShaderSource(gShader, 1, &geometrySource, NULL));
-        GLCALL(glCompileShader(gShader));
-        checkCompileErrors(gShader, "GEOMETRY");
-    }
+    _error = checkCompileErrors(sFragment, "FRAGMENT");
     // shader program
     GLCALL(this->_id = glCreateProgram());
     GLCALL(glAttachShader(this->_id, sVertex));
     GLCALL(glAttachShader(this->_id, sFragment));
-    if (geometrySource != nullptr)
-    {
-        GLCALL(glAttachShader(this->_id, gShader));
-    }
     GLCALL(glLinkProgram(this->_id));
-    checkCompileErrors(this->_id, "PROGRAM");
+    _error = checkCompileErrors(this->_id, "PROGRAM");
     // delete the shaders as they're linked into our program now and no longer
     // necessary
     GLCALL(glDeleteShader(sVertex));
     GLCALL(glDeleteShader(sFragment));
-    if (geometrySource != nullptr)
-    {
-        GLCALL(glDeleteShader(gShader));
-    }
+}
+void Shader::replace(const int id)
+{
+
+    // TODO: glDeleteShader
+    _id = id;
 }
 
 void Shader::setFloat(const char* name, float value)
@@ -110,7 +99,7 @@ int Shader::getUniformLocation(const char* name) const
     return location;
 };
 
-void Shader::checkCompileErrors(unsigned int object, std::string type)
+bool Shader::checkCompileErrors(unsigned int object, std::string type)
 {
     int  success;
     char infoLog[1024];
@@ -126,6 +115,7 @@ void Shader::checkCompileErrors(unsigned int object, std::string type)
                 "{}"
                 "\n -- --------------------------------------------------- ",
                 type, infoLog);
+            return true;
         }
     }
     else
@@ -139,6 +129,8 @@ void Shader::checkCompileErrors(unsigned int object, std::string type)
                 "{}"
                 "\n -- --------------------------------------------------- "
                 "-- ");
+            return true;
         }
     }
+    return false;
 }

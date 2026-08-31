@@ -118,36 +118,24 @@ int main(int argc, char* argv[])
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     LOG_INFO("IMGUI Init end");
 
     game.Init();
 
-    Shader terrain_shader = ResourceManager::LoadShader(
-        "shaders/terrain/vertex.glsl", "shaders/terrain/fragment.glsl", NULL,
-        "terrain");
+    Shader& terrain_shader =
+        ResourceManager::LoadShader("shaders/terrain/vertex.glsl",
+                                    "shaders/terrain/fragment.glsl", "terrain");
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
-    Shader default_shader = ResourceManager::LoadShader(
-        "shaders/default/vertex.glsl", "shaders/default/fragment.glsl", NULL,
-        "default");
-
-    Shader specular_shader = ResourceManager::LoadShader(
-        "shaders/specular_map/vertex.glsl",
-        "shaders/specular_map/fragment.glsl", NULL, "specular");
-
-    Shader light_shader = ResourceManager::LoadShader(
-        "shaders/light/vertex.glsl", "shaders/light/fragment.glsl", NULL,
-        "light");
     tonemap_shader = ResourceManager::LoadShader(
         "shaders/postprocess/quad.vert", "shaders/postprocess/tonemap.frag",
-        nullptr, "tonemap");
+        "tonemap");
     vignette_shader = ResourceManager::LoadShader(
         "shaders/postprocess/quad.vert", "shaders/postprocess/vignette.frag",
-        nullptr, "vignette");
+        "vignette");
 
     pipeline.addEffect(&tonemap_shader, "Tonemap");
     pipeline.addEffect(&vignette_shader, "Vignette");
@@ -238,6 +226,10 @@ int main(int argc, char* argv[])
             ImGui::Checkbox("Draw clouds (1)", &drawClouds);
             ImGui::Checkbox("Draw water (2)", &drawWater);
             ImGui::Checkbox("Draw terrain (3)", &drawTerrain);
+            if (ImGui::Button("Recompile shaders"))
+            {
+                ResourceManager::ReCompileShaders();
+            }
 
             if (ImGui::CollapsingHeader("Terrain",
                                         ImGuiTreeNodeFlags_DefaultOpen))
@@ -405,6 +397,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
         drawWater = !drawWater;
     if (key == GLFW_KEY_3 && action == GLFW_PRESS)
         drawTerrain = !drawTerrain;
+
+    if (key == GLFW_KEY_R && action == GLFW_PRESS)
+        ResourceManager::ReCompileShaders();
     if (key >= 0 && key < 1024)
     {
         if (action == GLFW_PRESS)

@@ -29,8 +29,8 @@ class Clouds
     int   stepCount   = 64;
 
   private:
-    Shader      _marchShader;
-    Shader      _compositeShader;
+    Shader&     _marchShader;
+    Shader&     _compositeShader;
     Mesh        _quad;
     Framebuffer _fbo;
 

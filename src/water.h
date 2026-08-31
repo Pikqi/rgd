@@ -31,7 +31,7 @@ class Water
     float     maxWaterDepth      = 12.0f; // depth at full darkness
 
   private:
-    Shader       _shader;
+    Shader&      _shader;
     Mesh         _mesh;
     Framebuffer  _sceneSnapshot; // copy of scene color+depth before water draw
     unsigned int _viewW;

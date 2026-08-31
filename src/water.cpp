@@ -10,12 +10,12 @@
 
 Water::Water(unsigned int viewportW, unsigned int viewportH)
     : _sceneSnapshot(viewportW, viewportH, true), _viewW(viewportW),
-      _viewH(viewportH)
+      _viewH(viewportH),
+      _shader(ResourceManager::LoadShader(
+          "shaders/water/vertex.glsl", "shaders/water/fragment.glsl", "water"))
+
 {
-    _shader = ResourceManager::LoadShader("shaders/water/vertex.glsl",
-                                          "shaders/water/fragment.glsl",
-                                          nullptr, "water");
-    _mesh   = primitives::createPlaneXZ(1000.0f);
+    _mesh = primitives::createPlaneXZ(1000.0f);
 }
 
 void Water::resize(unsigned int viewportW, unsigned int viewportH)

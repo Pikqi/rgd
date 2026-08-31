@@ -8,10 +8,16 @@
 class Shader
 {
   public:
+    std::string vertexPath;
+    std::string fragmentPath;
+    std::string geometryPath;
+
     Shader() {}
     void use() const;
-    void compile(const char* vertexSource, const char* fragmentSource,
-                 const char* geometrySource = nullptr);
+    void compile(const char* vertexSource, const char* fragmentSource);
+    void reCompile();
+    void replace(const int id);
+
     // utility functions
     void setFloat(const char* name, float value);
     void setInteger(const char* name, int value);
@@ -28,9 +34,19 @@ class Shader
         return _id;
     }
 
+    bool has_error()
+    {
+        return _error;
+    };
+    void clear_error()
+    {
+        _error = false;
+    }
+
   private:
-    void checkCompileErrors(unsigned int object, std::string type);
+    bool checkCompileErrors(unsigned int object, std::string type);
     int  getUniformLocation(const char* name) const;
 
     unsigned int _id;
+    bool         _error;
 };

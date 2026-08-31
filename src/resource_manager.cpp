@@ -9,7 +9,6 @@
 #include <string>
 
 #include "logger.h"
-#include "rgd.h"
 #include "stb_image.h"
 #include "texture.h"
 
@@ -18,15 +17,30 @@ std::unordered_map<std::string, std::shared_ptr<Texture>>
                                         ResourceManager::textures;
 std::unordered_map<std::string, Shader> ResourceManager::shaders;
 
-Shader ResourceManager::LoadShader(const char* vShaderFile,
-                                   const char* fShaderFile,
-                                   const char* gShaderFile, std::string name)
+Shader& ResourceManager::LoadShader(const char* vShaderFile,
+                                    const char* fShaderFile, std::string name)
 {
-    shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, gShaderFile);
+    shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile);
     return shaders[name];
 }
 
-Shader ResourceManager::GetShader(std::string name)
+void ResourceManager::ReCompileShaders()
+{
+
+    for (auto& [name, shader] : shaders)
+    {
+
+        Shader recompiled = loadShaderFromFile(shader.vertexPath.c_str(),
+                                               shader.fragmentPath.c_str());
+        if (!recompiled.has_error())
+        {
+            shader.replace(recompiled.get_id());
+        }
+    }
+    LOG_INFO("Shaders recompiled");
+}
+
+Shader& ResourceManager::GetShader(std::string name)
 {
     return shaders[name];
 }
@@ -58,13 +72,11 @@ void ResourceManager::Clear()
 }
 
 Shader ResourceManager::loadShaderFromFile(const char* vShaderFile,
-                                           const char* fShaderFile,
-                                           const char* gShaderFile)
+                                           const char* fShaderFile)
 {
     // 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;
     std::string fragmentCode;
-    std::string geometryCode;
     try
     {
         // open files
@@ -80,27 +92,18 @@ Shader ResourceManager::loadShaderFromFile(const char* vShaderFile,
         // convert stream into string
         vertexCode   = vShaderStream.str();
         fragmentCode = fShaderStream.str();
-        // if geometry shader path is present, also load a geometry shader
-        if (gShaderFile != nullptr)
-        {
-            std::ifstream     geometryShaderFile(gShaderFile);
-            std::stringstream gShaderStream;
-            gShaderStream << geometryShaderFile.rdbuf();
-            geometryShaderFile.close();
-            geometryCode = gShaderStream.str();
-        }
     } catch (std::exception e)
     {
-        LOG_FATAL("ERROR::SHADER: Failed to read shader files {} {} {}",
-                  vShaderFile, fShaderFile, gShaderFile);
+        LOG_FATAL("ERROR::SHADER: Failed to read shader files {} {}",
+                  vShaderFile, fShaderFile);
     }
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
-    const char* gShaderCode = geometryCode.c_str();
     // 2. now create shader object from source code
     Shader shader;
-    shader.compile(vShaderCode, fShaderCode,
-                   gShaderFile != nullptr ? gShaderCode : nullptr);
+    shader.compile(vShaderCode, fShaderCode);
+    shader.vertexPath   = std::string(vShaderFile);
+    shader.fragmentPath = std::string(fShaderFile);
     return shader;
 }
 

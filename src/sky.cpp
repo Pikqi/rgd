@@ -7,9 +7,9 @@
 #include <glm/gtc/matrix_inverse.hpp>
 
 Sky::Sky()
+    : _shader(ResourceManager::LoadShader("shaders/sky/vertex.glsl",
+                                          "shaders/sky/fragment.glsl", "sky"))
 {
-    _shader = ResourceManager::LoadShader(
-        "shaders/sky/vertex.glsl", "shaders/sky/fragment.glsl", nullptr, "sky");
     _quad = primitives::createFullscreenQuad();
 }
 
