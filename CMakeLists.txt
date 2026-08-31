@@ -21,7 +21,7 @@ file(GLOB IMGUI_SOURCES
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${THIRD_PARTY_SOURCES} ${IMGUI_SOURCES} )
 
-# Include directories (GLAD and your headers)
+# Include directories
 target_include_directories(${PROJECT_NAME} PUBLIC include src include/imgui include/imgui/backends)
 
 # --- Link OpenGL ---
