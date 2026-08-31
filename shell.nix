@@ -7,9 +7,6 @@ pkgs.mkShell {
     gcc
     cmake
     gnumake
-    pkg-config
-    glfw3
-    spdlog
     gdb
     libGL
     libX11

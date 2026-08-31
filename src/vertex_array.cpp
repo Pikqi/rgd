@@ -1,6 +1,7 @@
 #include <vertex_array.h>
 #include <glad/glad.h>
 #include <rgd.h>
+#include <cstdint>
 
 VertexArray::VertexArray()
 {
@@ -40,7 +41,8 @@ void VertexArray::add_buffer(const VertexBuffer&       vb,
 
         GLCALL(glVertexAttribPointer(i, element.count, element.type,
                                      element.normalize ? GL_TRUE : GL_FALSE,
-                                     layout.get_stride(), (void*)offset));
+                                     layout.get_stride(),
+                                     (const void*)(uintptr_t)offset));
         offset += element_size;
         GLCALL(glEnableVertexAttribArray(i));
     }

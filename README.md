@@ -13,22 +13,20 @@ Building and running has only been confirmed on a linux machine for now, but sin
 
 Make sure to clone the repo with `--recursive` flag to get all submodules.
 
-This project is using CMake and gcc, the runtime dependencies are:
-
-- glfw3 for windowing
-- OpenGL 3 +
+This project is using CMake and gcc, and builds most of the dependencies from submodules. Only runtime dep is OpenGL.
 
 There is also a shell.nix file, if you are on a system with nix installed you can run nix-shell . in to get put into a shell with all build and runtime deps on a linux host.
 
 There are some staticly included libraries such as:
 
 - GLAD - For GL loading
+- GLFW - For windowing
 - ImGui - for immediate mode ui
 - glm - gl maths
 - stb_perlin - perlin noise implementation
 - spdlog - for logging
 
-To configure and build the project:
+To build and run the project (with Make) (Replace $(nproc) with number of threads you have on windows)
 
 ```
 mkdir build
@@ -36,6 +34,16 @@ cd build
 cmake ..
 
 make -j$(nproc) run
+```
+
+Or with ninja:
+
+```
+mkdir build
+cd build
+cmake .. -G Ninja
+
+ninja run
 ```
 
 ### Runtime parameters
