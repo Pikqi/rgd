@@ -16,6 +16,8 @@ uniform int uStepCount;
 uniform float uTime;
 uniform bool uOffsetStart;
 
+uniform sampler2D uSceneDepth;
+
 float hash12(vec2 p)
 {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -75,65 +77,78 @@ float sampleDensity(vec3 p) {
   return density;
 }
 
-vec4 raymarch(vec3 rayOrigin, vec3 rayDirection, float tEnter, float tExit) {
-  float hashOffset = 0;
-  if (uOffsetStart) {
-    hashOffset = hash12(gl_FragCoord.xy) * 0.6;
-  }
-  vec3 p = rayOrigin + (tEnter + hashOffset) * rayDirection;
-  float stepSize = (tExit - tEnter) / float(uStepCount);
+const float MAX_MARCH_DIST = 400.0;
 
-  vec4 res = vec4(0.0);
+bool intersectSlab(vec3 ro, vec3 rd, float yBottom, float yTop,
+  out float tNear, out float tFar)
+{
+  float dy = abs(rd.y) < 0.0004 ? 0.0004 : rd.y;
+  float t0 = (yBottom - ro.y) / dy;
+  float t1 = (yTop - ro.y) / dy;
 
-  for (int i = 0; i < uStepCount; i++) {
+  tNear = max(min(t0, t1), 0.0);
+  tFar = min(max(t0, t1), tNear + MAX_MARCH_DIST);
+  return tFar > tNear;
+}
+
+vec4 raymarch(vec3 ro, vec3 rd, float tNear, float tFar)
+{
+  float t = tNear;
+  if (uOffsetStart)
+    t += hash12(gl_FragCoord.xy) * 0.6;
+
+  float stepSize = (tFar - tNear) / float(uStepCount);
+  vec4 acc = vec4(0.0);
+
+  for (int i = 0; i < uStepCount; i++)
+  {
+    vec3 p = ro + t * rd;
     float density = sampleDensity(p);
 
-    if (density > 0.0) {
+    if (density > 0.0)
+    {
       float diffuse = clamp((density - sampleDensity(p + 0.3 * uSunDir)) / 0.3, 0.0, 1.0);
       vec3 lin = vec3(0.60, 0.60, 0.75) * 1.1 + 0.8 * uSunColor * diffuse;
-      vec4 color = vec4(mix(vec3(1.0, 1.0, 1.0), vec3(0.3, 0.3, 0.3), density), density);
-      color.rgb *= lin;
-      color.rgb *= color.a;
-      res += color * (1.0 - res.a);
+      vec3 albedo = mix(vec3(1.0), vec3(0.3), density);
+      vec4 sample_ = vec4(albedo * lin, 1.0) * density;
+      acc += sample_ * (1.0 - acc.a);
+
+      if (acc.a > 0.99)
+        break;
     }
 
-    p += stepSize * rayDirection;
+    t += stepSize;
   }
 
-  return res;
+  return acc;
 }
 
 void main()
 {
-  // Reconstruct world-space view ray.
   vec4 nearH = uInvViewProj * vec4(vNDC, -1.0, 1.0);
   vec4 farH = uInvViewProj * vec4(vNDC, 1.0, 1.0);
-  vec3 worldNear = nearH.xyz / nearH.w;
-  vec3 worldFar = farH.xyz / farH.w;
-  vec3 rayDir = normalize(worldFar - worldNear);
-  vec3 rayOrigin = uCameraPos;
+  vec3 rayDir = normalize(farH.xyz / farH.w - nearH.xyz / nearH.w);
 
-  float tEnter, tExit;
-  if (abs(rayDir.y) < 0.0001)
+  float tNear, tFar;
+  if (!intersectSlab(uCameraPos, rayDir, uLayerStart, uLayerEnd, tNear, tFar))
   {
-    // Ray parallel to slab, only hit if inside slab.
-    if (rayOrigin.y > uLayerStart && rayOrigin.y < uLayerEnd)
+    FragColor = vec4(0.0);
+    return;
+  }
+
+  vec2 screenUV = vNDC * 0.5 + 0.5;
+  float sceneDepth = texture(uSceneDepth, screenUV).r;
+  if (sceneDepth < 1.0)
+  {
+    vec4 hitH = uInvViewProj * vec4(vNDC, sceneDepth * 2.0 - 1.0, 1.0);
+    float sceneDist = length(hitH.xyz / hitH.w - uCameraPos);
+    if (tNear >= sceneDist)
     {
-      tEnter = 0.0;
-      tExit = 100000.0;
+      FragColor = vec4(0.0);
+      return;
     }
-  }
-  else
-  {
-    float t1 = (uLayerStart - rayOrigin.y) / rayDir.y;
-    float t2 = (uLayerEnd - rayOrigin.y) / rayDir.y;
-    tEnter = min(t1, t2);
-    tExit = max(t1, t2);
-
-    tEnter = max(tEnter, 0.0);
-    tExit = max(tExit, 0.0);
+    tFar = min(tFar, sceneDist);
   }
 
-  vec4 res = raymarch(rayOrigin, rayDir, tEnter, tExit);
-  FragColor = res;
+  FragColor = raymarch(uCameraPos, rayDir, tNear, tFar);
 }

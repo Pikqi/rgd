@@ -50,7 +50,11 @@ void Clouds::draw(const Camera3D& camera, const glm::mat4& projection,
     GLCALL(glDisable(GL_DEPTH_TEST));
     GLCALL(glDisable(GL_BLEND));
 
+    GLCALL(glActiveTexture(GL_TEXTURE0));
+    GLCALL(glBindTexture(GL_TEXTURE_2D, sceneFbo.depthTex()));
+
     _marchShader.use();
+    _marchShader.setInteger("uSceneDepth", 0);
     _marchShader.setMatrix4("uInvViewProj", invVP);
     _marchShader.setVector3f("uCameraPos", camera.position);
     _marchShader.setVector3f("uSunDir", sunDir);

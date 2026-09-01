@@ -187,12 +187,6 @@ int main(int argc, char* argv[])
         // depth.
         sky.draw(camera, projection, sunDir, sunColor);
 
-        if (drawClouds)
-        {
-            clouds.draw(camera, projection, sunDir, sunColor, pipeline.scene(),
-                        static_cast<float>(glfwGetTime()));
-        }
-
         terrain_shader.setMatrix4("projection", projection);
         terrain_shader.setMatrix4("view", view);
         terrain_shader.setMatrix4("model", model);
@@ -206,6 +200,12 @@ int main(int argc, char* argv[])
         {
             water.draw(camera, projection, sunDir, sunColor, pipeline.scene(),
                        static_cast<float>(glfwGetTime()));
+        }
+
+        if (drawClouds)
+        {
+            clouds.draw(camera, projection, sunDir, sunColor, pipeline.scene(),
+                        static_cast<float>(glfwGetTime()));
         }
 
         tonemap_shader.setFloat("uExposure", exposure);
