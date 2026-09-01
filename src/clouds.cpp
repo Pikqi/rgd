@@ -60,6 +60,7 @@ void Clouds::draw(const Camera3D& camera, const glm::mat4& projection,
     _marchShader.setFloat("uCoverage", coverage);
     _marchShader.setInteger("uStepCount", stepCount);
     _marchShader.setFloat("uTime", time * 0.1f * windSpeed);
+    _marchShader.setInteger("uOffsetStart", enableOffsetStart);
 
     _quad.bind();
     GLCALL(glDrawArrays(GL_TRIANGLES, 0, _quad.getVertexCount()));

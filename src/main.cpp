@@ -314,6 +314,8 @@ int main(int argc, char* argv[])
                 ImGui::SliderFloat("Wind speed", &clouds.windSpeed, 0.0f, 5.0f,
                                    "%.2f");
                 ImGui::SliderInt("Primary steps", &clouds.stepCount, 16, 256);
+                ImGui::Checkbox("Enable offset start",
+                                &clouds.enableOffsetStart);
                 ImGui::TextWrapped(
                     "Sun color / direction are controlled from the Sky panel.");
             }

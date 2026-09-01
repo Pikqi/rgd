@@ -21,6 +21,7 @@ class Shader
     // utility functions
     void setFloat(const char* name, float value);
     void setInteger(const char* name, int value);
+    void setBool(const char* name, bool value);
     void setVector2f(const char* name, float x, float y);
     void setVector2f(const char* name, const glm::vec2& value);
     void setVector3f(const char* name, float x, float y, float z);

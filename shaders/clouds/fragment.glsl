@@ -14,6 +14,14 @@ uniform float uLayerEnd;
 uniform float uCoverage;
 uniform int uStepCount;
 uniform float uTime;
+uniform bool uOffsetStart;
+
+float hash12(vec2 p)
+{
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
 
 float rand(vec3 p)
 {
@@ -68,7 +76,11 @@ float sampleDensity(vec3 p) {
 }
 
 vec4 raymarch(vec3 rayOrigin, vec3 rayDirection, float tEnter, float tExit) {
-  vec3 p = rayOrigin + tEnter * rayDirection;
+  float hashOffset = 0;
+  if (uOffsetStart) {
+    hashOffset = hash12(gl_FragCoord.xy) * 0.6;
+  }
+  vec3 p = rayOrigin + (tEnter + hashOffset) * rayDirection;
   float stepSize = (tExit - tEnter) / float(uStepCount);
 
   vec4 res = vec4(0.0);

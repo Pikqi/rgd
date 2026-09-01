@@ -17,11 +17,12 @@ class Clouds
               const glm::vec3& sunDir, const glm::vec3& sunColor,
               const Framebuffer& sceneFbo, float time);
 
-    float layerStart  = 25.0f;
-    float layerHeight = 5.0f;
-    float coverage    = 0.45f;
-    float windSpeed   = 1.0f;
-    int   stepCount   = 64;
+    float layerStart        = 25.0f;
+    float layerHeight       = 5.0f;
+    float coverage          = 0.45f;
+    float windSpeed         = 1.0f;
+    int   stepCount         = 64;
+    bool  enableOffsetStart = true;
 
   private:
     Shader&     _marchShader;

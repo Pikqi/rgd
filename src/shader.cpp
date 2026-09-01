@@ -48,6 +48,12 @@ void Shader::setInteger(const char* name, int value)
     this->use();
     GLCALL(glUniform1i(getUniformLocation(name), value));
 }
+
+void Shader::setBool(const char* name, bool value)
+{
+    this->use();
+    GLCALL(glUniform1ui(getUniformLocation(name), value));
+}
 void Shader::setVector2f(const char* name, float x, float y)
 {
     this->use();
