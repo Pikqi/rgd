@@ -148,8 +148,8 @@ int main(int argc, char* argv[])
     crt_shader = ResourceManager::LoadShader(
         "shaders/postprocess/quad.vert", "shaders/postprocess/crt.frag", "crt");
     Shader passthrough_shader = ResourceManager::LoadShader(
-        "shaders/postprocess/quad.vert",
-        "shaders/postprocess/passthrough.frag", "passthrough");
+        "shaders/postprocess/quad.vert", "shaders/postprocess/passthrough.frag",
+        "passthrough");
 
     pipeline.addEffect(&tonemap_shader, "Tonemap");
     pipeline.addEffect(&vignette_shader, "Vignette");
@@ -440,7 +440,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
         drawWater = !drawWater;
     if (key == GLFW_KEY_3 && action == GLFW_PRESS)
         drawTerrain = !drawTerrain;
-
+    if (key == GLFW_KEY_C && action == GLFW_PRESS)
+        crtEnabled = !crtEnabled;
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
         ResourceManager::ReCompileShaders();
     if (key >= 0 && key < 1024)
