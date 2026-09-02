@@ -56,11 +56,20 @@ static Clouds*           g_clouds   = nullptr;
 static Water*            g_water    = nullptr;
 Shader                   tonemap_shader;
 Shader                   vignette_shader;
+Shader                   crt_shader;
 float                    exposure = 1.0f;
 
 float vignetteAmount = 0.335f;
 float vignetteRadius = 1.01;
 float vignetteSoft   = 0.4f;
+
+bool  crtEnabled           = true;
+float crtCurvature         = 0.08f;
+float crtScanlineIntensity = 0.25f;
+float crtScanlineCount     = 480.0f;
+float crtAberration        = 0.0015f;
+float crtVignette          = 0.25f;
+float crtBrightness        = 1.15f;
 
 bool drawClouds  = true;
 bool drawWater   = true;
@@ -136,6 +145,11 @@ int main(int argc, char* argv[])
     vignette_shader = ResourceManager::LoadShader(
         "shaders/postprocess/quad.vert", "shaders/postprocess/vignette.frag",
         "vignette");
+    crt_shader = ResourceManager::LoadShader(
+        "shaders/postprocess/quad.vert", "shaders/postprocess/crt.frag", "crt");
+    Shader passthrough_shader = ResourceManager::LoadShader(
+        "shaders/postprocess/quad.vert",
+        "shaders/postprocess/passthrough.frag", "passthrough");
 
     pipeline.addEffect(&tonemap_shader, "Tonemap");
     pipeline.addEffect(&vignette_shader, "Vignette");
@@ -212,7 +226,21 @@ int main(int argc, char* argv[])
         vignette_shader.setFloat("uIntensity", vignetteAmount);
         vignette_shader.setFloat("uRadius", vignetteRadius);
         vignette_shader.setFloat("uSoftness", vignetteSoft);
-        pipeline.run(vignette_shader);
+
+        if (crtEnabled)
+        {
+            crt_shader.setFloat("uCurvature", crtCurvature);
+            crt_shader.setFloat("uScanlineIntensity", crtScanlineIntensity);
+            crt_shader.setFloat("uScanlineCount", crtScanlineCount);
+            crt_shader.setFloat("uAberration", crtAberration);
+            crt_shader.setFloat("uVignette", crtVignette);
+            crt_shader.setFloat("uBrightness", crtBrightness);
+            pipeline.run(crt_shader);
+        }
+        else
+        {
+            pipeline.run(passthrough_shader);
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -339,6 +367,19 @@ int main(int argc, char* argv[])
                                    1.5f);
                 ImGui::SliderFloat("Vignette softness", &vignetteSoft, 0.0f,
                                    1.0f);
+
+                ImGui::Separator();
+                ImGui::Checkbox("CRT", &crtEnabled);
+                ImGui::SliderFloat("CRT curvature", &crtCurvature, 0.0f, 0.4f);
+                ImGui::SliderFloat("CRT scanlines", &crtScanlineIntensity, 0.0f,
+                                   1.0f);
+                ImGui::SliderFloat("CRT scanline count", &crtScanlineCount,
+                                   64.0f, 1080.0f, "%.0f");
+                ImGui::SliderFloat("CRT aberration", &crtAberration, 0.0f,
+                                   0.01f, "%.4f");
+                ImGui::SliderFloat("CRT vignette", &crtVignette, 0.0f, 1.0f);
+                ImGui::SliderFloat("CRT brightness", &crtBrightness, 0.5f,
+                                   2.0f);
             }
 
             if (ImGui::CollapsingHeader("Pipeline Debug"))
