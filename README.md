@@ -31,7 +31,7 @@ To build and run the project (with Make) (Replace $(nproc) with number of thread
 ```
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 
 make -j$(nproc) run
 ```
@@ -41,7 +41,7 @@ Or with ninja:
 ```
 mkdir build
 cd build
-cmake .. -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release ..  -G Ninja
 
 ninja run
 ```
